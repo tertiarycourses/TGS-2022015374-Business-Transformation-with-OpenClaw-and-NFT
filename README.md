@@ -1,7 +1,10 @@
 # WSQ Business Transformation with OpenClaw — Lab Manual
 
-Hands-on lab activities for the Tertiary Courses class
-**[WSQ Business Transformation with OpenClaw and NFT](https://www.tertiarycourses.com.sg/wsq-business-transformation-with-openclaw-and-nft.html)**.
+Hands-on class activities for the Tertiary Courses WSQ class
+**WSQ Business Transformation with OpenClaw and NFT**
+(Course Code: **TGS-2022015374**).
+
+Register here: https://www.tertiarycourses.com.sg/wsq-business-transformation-with-openclaw-and-nft.html
 
 These labs focus on the **OpenClaw** portion of the course. Students install,
 configure, integrate, automate, and secure an OpenClaw agent across local
