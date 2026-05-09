@@ -144,41 +144,47 @@ openclaw gateway status
 
 ## Step 5 — Connect a Model Provider
 
-Pick **one** provider. Get your API key from the provider's dashboard, then run
-the matching commands.
+Pick **one** provider. OpenAI and MiniMax support **OAuth sign-in** (no API key
+needed — credentials are stored in `~/.openclaw/auth/`). DeepSeek still uses an
+API key.
 
-### Option A — OpenAI
+### Option A — OpenAI (OAuth)
 ```bash
-export OPENAI_API_KEY="sk-..."
+openclaw auth login openai
 openclaw config set provider openai
 openclaw config set model openai/gpt-4o
 ```
+A browser window opens — sign in to your OpenAI account and approve access.
+The CLI exits once the token is captured.
 
-### Option B — DeepSeek
+### Option B — DeepSeek (API key)
 ```bash
 export DEEPSEEK_API_KEY="sk-..."
 openclaw config set provider deepseek
 openclaw config set model deepseek/deepseek-chat
 ```
 
-### Option C — MiniMax
+### Option C — MiniMax (OAuth)
 ```bash
-export MINIMAX_API_KEY="..."
-export MINIMAX_GROUP_ID="..."
+openclaw auth login minimax
 openclaw config set provider minimax
 openclaw config set model minimax/abab6.5-chat
 ```
+A browser window opens — sign in with your MiniMax account. The group ID is
+fetched automatically as part of the OAuth flow.
 
 Confirm:
 ```bash
+openclaw auth status
 openclaw model list
 openclaw model current
 ```
 
 ![](screenshots/06-model-set.png)
 
-> **Tip**: Persist environment variables in `~/.zshrc` (Mac/Linux) or System
-> Environment Variables (Windows) so they survive reboots.
+> **Tip**: For DeepSeek, persist `DEEPSEEK_API_KEY` in `~/.zshrc` (Mac/Linux)
+> or System Environment Variables (Windows) so it survives reboots. OAuth
+> tokens are persisted automatically.
 
 ---
 
