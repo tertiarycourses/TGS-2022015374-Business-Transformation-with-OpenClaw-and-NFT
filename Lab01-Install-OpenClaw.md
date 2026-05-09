@@ -93,18 +93,11 @@ exe.dev sandbox. Pick one, then follow the steps below.
 ### 3A. Hostinger VPS (Ubuntu 22.04 KVM)
 
 1. Buy/launch a KVM VPS from <https://www.hostinger.com?REFERRALCODE=FEGANGCHQ20C> (use this link for a 20% discount).
-2. Log in to **hPanel** at <https://hpanel.hostinger.com/vps>.
-3. Click your **VPS** → **Manage**.
-4. On the VPS Overview page, click **Browser terminal** in the top-right
-   corner. A web-based shell opens — no local SSH client needed.
-5. Continue with the **Ubuntu install steps** below directly inside the
-   browser terminal.
-
-> **Tip**: Hostinger also offers **Kodee VPS Terminal Edition**, an AI
-> sysadmin in the same panel that can run commands from natural-language
-> prompts. See the
-> [browser terminal guide](https://www.hostinger.com/support/7978544-how-to-use-the-browser-terminal-in-hostinger/)
-> for details.
+2. SSH in:
+   ```bash
+   ssh root@<your-vps-ip>
+   ```
+3. Continue with the **Ubuntu install steps** below.
 
 ![](screenshots/03-hostinger-ssh.png)
 
