@@ -1,0 +1,284 @@
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node -v && npm -v
+#Expected output
+Sudo is disabled on this machine. To enable it, go to the Developer Settings page in the Settings app
+Sudo is disabled on this machine. To enable it, go to the Developer Settings page in the Settings app
+v24.14.0
+11.9.0
+
+#Install openclaw
+npm install -g openclaw@latest
+#Config Open claw
+openclaw onboard
+#Expected output
+🦞 OpenClaw 2026.5.7 (eeef486) — Pairing codes exist because even bots believe in consent—and good security hygiene.
+
+Windows detected - OpenClaw runs great on WSL2!
+Native Windows might be trickier.
+Quick setup: wsl --install (one command, one reboot)
+Guide: https://docs.openclaw.ai/windows
+▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+██░▄▄▄░██░▄▄░██░▄▄▄██░▀██░██░▄▄▀██░████░▄▄▀██░███░██
+██░███░██░▀▀░██░▄▄▄██░█░█░██░█████░████░▀▀░██░█░█░██
+██░▀▀▀░██░█████░▀▀▀██░██▄░██░▀▀▄██░▀▀░█░██░██▄▀▄▀▄██
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                  🦞 OPENCLAW 🦞
+
+  OpenClaw setup
+
+#  I understand this is personal-by-default and shared/multi-user use requires lock-down. Continue?
+|  Yes
+
+#  Setup mode
+  QuickStart
+|
+o  QuickStart -------------------------+
+|                                      |
+|  Gateway port: 18789                 |
+|  Gateway bind: Loopback (127.0.0.1)  |
+|  Gateway auth: Token (default)       |
+|  Tailscale exposure: Off             |
+|  Direct to chat channels.            |
+|                                      |
++--------------------------------------+
+|
+# Model/auth provider
+|  MiniMax
+|
+o  MiniMax auth method
+|  MiniMax OAuth (Global)
+|
+o  Starting MiniMax OAuth (Global)…..|
+o  MiniMax OAuth ---------------------------------------------------------------------------+
+|                                                                                           |
+|  Open https://platform.minimax.io/oauth-authorize?user_code=5ERQ-5QMK&client=OpenClaw to  |
+|  approve access.                                                                          |
+|  If prompted, enter the code 5ERQ-5QMK.                                                   |
+|  Interval: 3000, Expires at: 1778330623922 unix timestamp                                 |
+|                                                                                           |
++-------------------------------------------------------------------------------------------+
+o  MiniMax OAuth complete
+|
+o  MiniMax OAuth -----------+
+|                           |
+|  Current Plan: Trial      |
+|  Valid until: 05/10/2026  |
+|                           |
++---------------------------+
+|
+o  Provider notes -------------------------------------------------------------------------+
+|                                                                                          |
+|  MiniMax OAuth tokens auto-refresh. Re-run login if refresh fails or access is revoked.  |
+|  Base URL defaults to https://api.minimax.io/anthropic. Override                         |
+|  models.providers.minimax-portal.baseUrl if needed.                                      |
+|  Current Plan: Trial                                                                     |
+|  Valid until: 05/10/2026                                                                 |
+|                                                                                          |
++------------------------------------------------------------------------------------------+
+|
+o  Model configured ---------------------------------+
+|                                                    |
+|  Default model set to minimax-portal/MiniMax-M2.7  |
+|                                                    |
++----------------------------------------------------+
+|
+o  Default model
+|  Keep current (minimax-portal/MiniMax-M2.7)
+|
+o  How channels work -----------------------------------------------------------------------+
+|                                                                                           |
+|  DM security: default is pairing; unknown DMs get a pairing code.                         |
+|  Approve with: openclaw pairing approve <channel> <code>                                  |
+|  Public DMs require dmPolicy="open" + allowFrom=["*"].                                    |
+|  Multi-user DMs: run: openclaw config set session.dmScope "per-channel-peer" (or          |
+|  "per-account-channel-peer" for multi-account channels) to isolate sessions.              |
+|  Docs: channels/pairing                                                                   |
+|                                                                                           |
+|  Feishu: 飞书/Lark enterprise messaging with doc/wiki/drive tools.                        |
+|  WeCom: Enterprise messaging and documents, scheduling, task tools.                       |
+|  Google Chat: Google Workspace Chat app with HTTP webhook.                                |
+|  Nostr: Decentralized protocol; encrypted DMs via NIP-04.                                 |
+|  Microsoft Teams: Teams SDK; enterprise support.                                          |
+|  Mattermost: self-hosted Slack-style chat; install the plugin to enable.                  |
+|  Nextcloud Talk: Self-hosted chat via Nextcloud Talk webhook bots.                        |
+|  Matrix: open protocol; install the plugin to enable.                                     |
+|  BlueBubbles: iMessage via the BlueBubbles mac app + REST API.                            |
+|  LINE: LINE Messaging API webhook bot.                                                    |
+|  Zalo: Vietnam-focused messaging platform with Bot API.                                   |
+|  Yuanbao: Tencent Yuanbao AI assistant conversation channel.                              |
+|  Zalo Personal: Zalo personal account via QR code login.                                  |
+|  Synology Chat: Connect your Synology NAS Chat to OpenClaw with full agent capabilities.  |
+|  Tlon: decentralized messaging on Urbit; install the plugin to enable.                    |
+|  Discord: very well supported right now.                                                  |
+|  iMessage: this is still a work in progress.                                              |
+|  IRC: classic IRC networks with DM/channel routing and pairing controls.                  |
+|  QQ Bot: connect to QQ via official QQ Bot API with group chat and direct message         |
+|  support.                                                                                 |
+|  Signal: signal-cli linked device; more setup (David Reagans: "Hop on Discord.").         |
+|  Slack: supported (Socket Mode).                                                          |
+|  Telegram: simplest way to get started — register a bot with @BotFather and get going.    |
+|  Twitch: Twitch chat integration                                                          |
+|  WhatsApp: works with your own number; recommend a separate phone + eSIM.     
+
+
+o  Web search --------------------------------------------------------------+
+|                                                                           |
+|  DuckDuckGo Search (experimental) works without an API key.               |
+|  OpenClaw will enable the plugin and use it as your web_search provider.  |
+|  Docs: https://docs.openclaw.ai/tools/web                                 |
+|                                                                           |
++---------------------------------------------------------------------------+
+20:42:14 [skills] failed to create plugin skill symlink "C:\Users\mohan\.openclaw\plugin-skills\browser-automation" → "C:\Users\mohan\AppData\Roaming\npm\node_modules\openclaw\dist\extensions\browser\skills\browser-automation": Error: EPERM: operation not permitted, symlink 'C:\Users\mohan\AppData\Roaming\npm\node_modules\openclaw\dist\extensions\browser\skills\browser-automation' -> 'C:\Users\mohan\.openclaw\plugin-skills\browser-automation'
+|
+o  Skills status -------------+
+|                             |
+|  Eligible: 10               |
+|  Missing requirements: 35   |
+|  Unsupported on this OS: 8  |
+|  Blocked by allowlist: 0    |
+|                             |
++-----------------------------+
+|
+#  Configure skills now? (recommended)
+|  Yes
+|
+# Install missing skill dependencies
+|  Skip for now
+|
+#  Set GOOGLE_PLACES_API_KEY for goplaces?
+   No
+|
+#  Set NOTION_API_KEY for notion?
+  No
+
+# Set OPENAI_API_KEY for openai-whisper-api?
+ No
+
+#Set ELEVENLABS_API_KEY for sag?
+  No
+
+# Hooks ------------------------------------------------------------------+
+|                                                                          |
+|  Hooks let you automate actions when agent commands are issued.          |
+|  Example: Save session context to memory when you issue /new or /reset.  |
+|                                                                          |
+|  Learn more: https://docs.openclaw.ai/automation/hooks                   |
+|                                                                          |
++--------------------------------------------------------------------------+
+|
+# Enable hooks?
+ 🧹 compaction-notifier, 💾 session-memory
+|
+o  Hooks Configured -------------------------------------+
+|                                                        |
+|  Enabled 2 hooks: compaction-notifier, session-memory  |
+|                                                        |
+|  You can manage hooks later with:                      |
+|    openclaw hooks list                                 |
+|    openclaw hooks enable <name>                        |
+|    openclaw hooks disable <name>                       |
+|                                                        |
++--------------------------------------------------------+
+Config overwrite: C:\Users\mohan\.openclaw\openclaw.json (sha256 7f6aeb0c044d23b41c688381062fe02b1c0afff6a0d9390db581724bd37f1a52 -> 39c52770fb7ca94428e2346ebf1a2bf4fac392058a17ed668bde7f076bf7ba06, backup=C:\Users\mohan\.openclaw\openclaw.json.bak)
+|
+o  Gateway service runtime --------------------------------------------+
+|                                                                      |
+|  QuickStart uses Node for the Gateway service (stable + supported).  |
+|                                                                      |
++----------------------------------------------------------------------+
+|
+# Installing Gateway service….
+Installed Windows login item: C:\Users\mohan\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\OpenClaw Gateway.cmd
+Task script: C:\Users\mohan\.openclaw\gateway.cmd
+o  Gateway service installed.
+Health check failed: connect ECONNREFUSED 127.0.0.1:18789
+|
+o  Health check help --------------------------------+
+|                                                    |
+|  Docs:                                             |
+|  https://docs.openclaw.ai/gateway/health           |
+|  https://docs.openclaw.ai/gateway/troubleshooting  |
+|                                                    |
++----------------------------------------------------+
+|
+o  Optional apps ------------------------+
+|                                        |
+|  Add nodes for extra features:         |
+|  - macOS app (system + notifications)  |
+|  - iOS app (camera/canvas)             |
+|  - Android app (camera/canvas)         |
+|                                        |
++----------------------------------------+
+|
+o  Control UI ---------------------------------------------------------------------+
+|                                                                                  |
+|  Web UI: http://127.0.0.1:18789/                                                 |
+|  Web UI (with token):                                                            |
+|  http://127.0.0.1:18789/#token=f0e22ddc3fe28bcdb0a7fb3132afb6d3c421ad37dfad7f26  |
+|  Gateway WS: ws://127.0.0.1:18789                                                |
+|  Gateway: not detected (connect ECONNREFUSED 127.0.0.1:18789)                    |
+|  Docs: https://docs.openclaw.ai/web/control-ui                                   |
+|                                                                                  |
++----------------------------------------------------------------------------------+
+|
+# Start TUI (best option!) ---------------------------------+
+|                                                            |
+|  This is the defining action that makes your agent you.    |
+|  Please take your time.                                    |
+|  The more you tell it, the better the experience will be.  |
+|  We will send: "Wake up, my friend!"                       |
+|                                                            |
++------------------------------------------------------------+
+|
+o  How do you want to hatch your bot?
+|  Hatch in Terminal (recommended)
+
+🦞 OpenClaw 2026.5.7 (eeef486) — Gateway online—please keep hands, feet, and appendages inside the shell at all times.
+
+ openclaw tui - local embedded - agent main - session main
+
+#Prompt vlaidation
+what is weather forecase in singapore tomorrow?
+
+
+Here's the weather forecast for Singapore tomorrow (Sunday, 10 May):
+
+🌤️ Partly Cloudy — but expect rain in the morning/evening
+
+┌────────────┬────────────────────┬───────┬────────────┬────────────┬────────┐
+│ Time       │ Condition          │ Temp  │ Feels Like │ Wind       │ Rain   │
+├────────────┼────────────────────┼───────┼────────────┼────────────┼────────┤
+│ 🌅 Morning │ Patchy rain nearby │ +28°C │ 31°C       │ 10–14 km/h │ 1.0 mm │
+├────────────┼────────────────────┼───────┼────────────┼────────────┼────────┤
+│ ☀️ Noon    │ Patchy rain nearby │ +29°C │ 33°C       │ 14–24 km/h │ 0.7 mm │
+├────────────┼────────────────────┼───────┼────────────┼────────────┼────────┤
+│ 🌙 Evening │ Light rain showers │ +29°C │ 33°C       │ 12–19 km/h │ 0.3 mm │
+├────────────┼────────────────────┼───────┼────────────┼────────────┼────────┤
+│ 🌃 Night   │ Partly Cloudy      │ +28°C │ 32°C       │ 15–22 km/h │ 0.0 mm │
+└────────────┴────────────────────┴───────┴────────────┴────────────┴────────┘
+
+Summary: Rain is likely throughout the day (almost 100% chance morning/noon/evening), but it should be intermittent — not a total washout. The night looks clearer. Temps staying hot and humid, around 28–33°C.
+
+Bring an umbrella if you're heading out! ☂️
+
+#Prompt vlaidation
+what is new AI in Singapore?please concise
+
+
+Here's what's new with AI in Singapore:
+
+────────────────────────────────────────────────────────────────────────────────
+
+🇸🇬 National AI Council — PM Lawrence Wong chairs a new high-level body to steer Singapore's AI                                                                                                                  ──
+🇸🇬 National AI Council — PM Lawrence Wong chairs a new high-level body to steer Singapore's AI strategy, with focus on Advanced Manufacturing, Connectivity, Finance, and Healthcare.
+
+💰 Budget 2026 Investments:
+- S$1 billion into AI research and talent development
+- Enhanced Enterprise Innovation Scheme — 400% tax deductions on AI adoption spending (up to $50k/year for innovation projects with polytechnics/ITEs)
+- Up to $105k funding available for SMEs via government ECI programme
+
+👥 Upskilling Push:
+- IMDA expanding TechSkills Accelerator (TeSA) to train 40,000 tech professionals over 3 years under the National AI Impact Programme (NAIIP)
+
+🏭 National AI Missions — sector-specific missions being launched to accelerate AI deployment in priority industries, starting with advanced manufacturing
