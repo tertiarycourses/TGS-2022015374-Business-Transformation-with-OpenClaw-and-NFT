@@ -148,54 +148,71 @@ Pick **one** provider. OpenAI and MiniMax support **OAuth sign-in** (no API
 key — credentials are stored in `~/.openclaw/auth/`). Anthropic, DeepSeek, and
 OpenRouter use API keys.
 
-### Option A — OpenAI (OAuth, GPT-5.5)
+### Option A — OpenAI Codex (OAuth, GPT-5.5)
+
+OAuth uses the `openai-codex` provider, which lets you sign in with your
+**ChatGPT Plus / Pro** subscription instead of paying per-token.
 
 1. Start the OAuth flow:
    ```bash
-   openclaw auth login openai
+   openclaw models auth login --provider openai-codex
    ```
-2. The CLI prints a URL and opens your default browser. If it doesn't open
-   automatically, copy the URL into a browser manually.
-3. Sign in with your **OpenAI / ChatGPT account**.
-4. On the consent screen, click **Authorize OpenClaw**. Approve the requested
-   scopes (model access, billing read).
-5. The browser shows `Authorization complete — you can close this tab.` and
-   the CLI prints `✓ Logged in as <your-email>`.
+   (Or run `openclaw onboard` and pick **`openai-codex`** at the auth-choice
+   prompt.)
+2. The terminal prints an authorization URL. **Copy it** and open it in a
+   browser.
+3. Sign in to your **OpenAI / ChatGPT account** and click **Authorize
+   OpenClaw**.
+4. After approval the browser is redirected to a callback URL. **Copy the
+   entire callback URL** (including the `?code=…` query string) and paste it
+   back into the terminal.
+5. The wizard exchanges the code for an access token and saves the profile to
+   `~/.openclaw/auth-profiles/openai-codex.json`. Refresh is automatic.
 6. Select GPT-5.5 as the active model:
    ```bash
-   openclaw config set provider openai
-   openclaw config set model openai/gpt-5.5
+   openclaw models set openai-codex/gpt-5.5
    ```
 7. Verify:
    ```bash
-   openclaw auth status
-   openclaw model test
+   openclaw models auth status
+   openclaw models list
    ```
 
-### Option B — MiniMax (OAuth, MiniMax 2.7)
+### Option B — MiniMax (OAuth, MiniMax-M2.7)
 
-1. Start the OAuth flow:
+MiniMax exposes two OAuth realms — pick the one matching your account region.
+
+1. Enable the OAuth plugin and restart the gateway:
    ```bash
-   openclaw auth login minimax
+   openclaw plugins enable minimax-portal-auth
+   openclaw gateway restart
    ```
-2. The CLI prints a URL and opens your default browser. Copy it manually if
-   the browser doesn't launch.
-3. Sign in with your **MiniMax account** (email + password, or scan the
-   MiniMax app QR code).
-4. On the consent screen, click **Allow** to grant OpenClaw access to model
-   inference and your group ID.
-5. The browser shows `登录成功 / Login successful — return to your terminal.`
-   The CLI prints `✓ Logged in as <your-account>` and the **group ID** is
-   captured automatically.
-6. Select MiniMax 2.7 as the active model:
+2. Start the OAuth flow (pick one):
+   - **Global** (api.minimax.io):
+     ```bash
+     openclaw onboard --auth-choice minimax-global-oauth
+     ```
+   - **China** (api.minimaxi.com):
+     ```bash
+     openclaw onboard --auth-choice minimax-cn-oauth
+     ```
+   Or run directly:
    ```bash
-   openclaw config set provider minimax
-   openclaw config set model minimax/minimax-2.7
+   openclaw models auth login --provider minimax-portal --set-default
    ```
-7. Verify:
+3. The CLI prints a **user code** and a verification URL. Open the URL in a
+   browser, paste the code, and sign in to your **MiniMax account**.
+4. Click **Allow** to grant OpenClaw access. The terminal prints
+   `✓ Logged in` and the group ID is captured automatically.
+5. Select MiniMax-M2.7 as the active model:
    ```bash
-   openclaw auth status
-   openclaw model test
+   openclaw models set minimax-portal/MiniMax-M2.7
+   ```
+   (Use `MiniMax-M2.7-highspeed` for the faster variant.)
+6. Verify:
+   ```bash
+   openclaw models auth status
+   openclaw models list
    ```
 
 ### Option C — Anthropic (API key, Claude Opus 4.7)
