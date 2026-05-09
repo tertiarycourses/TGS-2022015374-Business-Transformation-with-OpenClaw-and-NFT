@@ -50,7 +50,15 @@ node -v && npm -v
 
 You have **three** install paths. Pick one.
 
-### Option A — Installer Script (recommended)
+### Option A — npm (recommended, cross-platform)
+
+After installing Node.js (Step 1), run:
+```bash
+npm install -g openclaw@latest
+openclaw onboard
+```
+
+### Option B — Installer Script (fallback if the npm method fails)
 
 **macOS / Linux / WSL2:**
 ```bash
@@ -60,12 +68,6 @@ curl -fsSL https://openclaw.ai/install.sh | bash
 **Windows (PowerShell, run as Administrator):**
 ```powershell
 iwr -useb https://openclaw.ai/install.ps1 | iex
-```
-
-### Option B — npm (cross-platform)
-```bash
-npm install -g openclaw@latest
-openclaw onboard --install-daemon
 ```
 
 ### Option C — From Source (advanced)
@@ -99,7 +101,8 @@ Pick **one** of the following.
    ```
 4. Install OpenClaw:
    ```bash
-   curl -fsSL https://openclaw.ai/install.sh | bash
+   npm install -g openclaw@latest
+   openclaw onboard
    ```
 5. Run as a systemd user service so it survives logout:
    ```bash
