@@ -87,7 +87,7 @@ Pick **one** of the following.
 
 ### 3A. Hostinger VPS (Ubuntu 22.04 KVM)
 
-1. Buy/launch a KVM VPS from <https://www.hostinger.com/vps-hosting>.
+1. Buy/launch a KVM VPS from <https://www.hostinger.com?REFERRALCODE=FEGANGCHQ20C> (use this link for a 20% discount).
 2. SSH in:
    ```bash
    ssh root@<your-vps-ip>
