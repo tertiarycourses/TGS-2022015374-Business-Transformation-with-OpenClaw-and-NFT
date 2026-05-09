@@ -144,9 +144,9 @@ openclaw gateway status
 
 ## Step 5 — Connect a Model Provider
 
-Pick **one** provider. OpenAI and MiniMax support **OAuth sign-in** (no API key
-needed — credentials are stored in `~/.openclaw/auth/`). DeepSeek still uses an
-API key.
+Pick **one** provider. OpenAI and MiniMax support **OAuth sign-in** (no API
+key — credentials are stored in `~/.openclaw/auth/`). Anthropic, DeepSeek, and
+OpenRouter use API keys.
 
 ### Option A — OpenAI (OAuth, GPT-5.5)
 
@@ -172,14 +172,7 @@ API key.
    openclaw model test
    ```
 
-### Option B — DeepSeek (API key)
-```bash
-export DEEPSEEK_API_KEY="sk-..."
-openclaw config set provider deepseek
-openclaw config set model deepseek/deepseek-chat
-```
-
-### Option C — MiniMax (OAuth, MiniMax 2.7)
+### Option B — MiniMax (OAuth, MiniMax 2.7)
 
 1. Start the OAuth flow:
    ```bash
@@ -205,7 +198,49 @@ openclaw config set model deepseek/deepseek-chat
    openclaw model test
    ```
 
-Confirm:
+### Option C — Anthropic (API key, Claude Opus 4.7)
+
+1. Get an API key from <https://console.anthropic.com/settings/keys>.
+2. Export and configure:
+   ```bash
+   export ANTHROPIC_API_KEY="sk-ant-..."
+   openclaw config set provider anthropic
+   openclaw config set model anthropic/claude-opus-4-7
+   ```
+3. Verify:
+   ```bash
+   openclaw model test
+   ```
+
+### Option D — DeepSeek (API key, V4)
+
+1. Get an API key from <https://platform.deepseek.com/api_keys>.
+2. Export and configure:
+   ```bash
+   export DEEPSEEK_API_KEY="sk-..."
+   openclaw config set provider deepseek
+   openclaw config set model deepseek/deepseek-v4
+   ```
+3. Verify:
+   ```bash
+   openclaw model test
+   ```
+
+### Option E — OpenRouter (API key, Claude Opus 4.7)
+
+1. Get an API key from <https://openrouter.ai/keys>.
+2. Export and configure:
+   ```bash
+   export OPENROUTER_API_KEY="sk-or-..."
+   openclaw config set provider openrouter
+   openclaw config set model openrouter/anthropic/claude-opus-4.7
+   ```
+3. Verify:
+   ```bash
+   openclaw model test
+   ```
+
+Confirm the active provider:
 ```bash
 openclaw auth status
 openclaw model list
@@ -214,9 +249,10 @@ openclaw model current
 
 ![](screenshots/06-model-set.png)
 
-> **Tip**: For DeepSeek, persist `DEEPSEEK_API_KEY` in `~/.zshrc` (Mac/Linux)
-> or System Environment Variables (Windows) so it survives reboots. OAuth
-> tokens are persisted automatically.
+> **Tip**: Persist API keys (`ANTHROPIC_API_KEY`, `DEEPSEEK_API_KEY`,
+> `OPENROUTER_API_KEY`) in `~/.zshrc` (Mac/Linux) or System Environment
+> Variables (Windows) so they survive reboots. OAuth tokens are persisted
+> automatically.
 
 ---
 
