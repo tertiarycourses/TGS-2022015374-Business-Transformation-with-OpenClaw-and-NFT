@@ -148,14 +148,29 @@ Pick **one** provider. OpenAI and MiniMax support **OAuth sign-in** (no API key
 needed — credentials are stored in `~/.openclaw/auth/`). DeepSeek still uses an
 API key.
 
-### Option A — OpenAI (OAuth)
-```bash
-openclaw auth login openai
-openclaw config set provider openai
-openclaw config set model openai/gpt-4o
-```
-A browser window opens — sign in to your OpenAI account and approve access.
-The CLI exits once the token is captured.
+### Option A — OpenAI (OAuth, GPT-5.5)
+
+1. Start the OAuth flow:
+   ```bash
+   openclaw auth login openai
+   ```
+2. The CLI prints a URL and opens your default browser. If it doesn't open
+   automatically, copy the URL into a browser manually.
+3. Sign in with your **OpenAI / ChatGPT account**.
+4. On the consent screen, click **Authorize OpenClaw**. Approve the requested
+   scopes (model access, billing read).
+5. The browser shows `Authorization complete — you can close this tab.` and
+   the CLI prints `✓ Logged in as <your-email>`.
+6. Select GPT-5.5 as the active model:
+   ```bash
+   openclaw config set provider openai
+   openclaw config set model openai/gpt-5.5
+   ```
+7. Verify:
+   ```bash
+   openclaw auth status
+   openclaw model test
+   ```
 
 ### Option B — DeepSeek (API key)
 ```bash
@@ -164,14 +179,31 @@ openclaw config set provider deepseek
 openclaw config set model deepseek/deepseek-chat
 ```
 
-### Option C — MiniMax (OAuth)
-```bash
-openclaw auth login minimax
-openclaw config set provider minimax
-openclaw config set model minimax/abab6.5-chat
-```
-A browser window opens — sign in with your MiniMax account. The group ID is
-fetched automatically as part of the OAuth flow.
+### Option C — MiniMax (OAuth, MiniMax 2.7)
+
+1. Start the OAuth flow:
+   ```bash
+   openclaw auth login minimax
+   ```
+2. The CLI prints a URL and opens your default browser. Copy it manually if
+   the browser doesn't launch.
+3. Sign in with your **MiniMax account** (email + password, or scan the
+   MiniMax app QR code).
+4. On the consent screen, click **Allow** to grant OpenClaw access to model
+   inference and your group ID.
+5. The browser shows `登录成功 / Login successful — return to your terminal.`
+   The CLI prints `✓ Logged in as <your-account>` and the **group ID** is
+   captured automatically.
+6. Select MiniMax 2.7 as the active model:
+   ```bash
+   openclaw config set provider minimax
+   openclaw config set model minimax/minimax-2.7
+   ```
+7. Verify:
+   ```bash
+   openclaw auth status
+   openclaw model test
+   ```
 
 Confirm:
 ```bash
