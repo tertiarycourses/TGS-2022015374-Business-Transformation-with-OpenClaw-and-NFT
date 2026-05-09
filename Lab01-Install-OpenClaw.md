@@ -87,6 +87,9 @@ openclaw onboard --install-daemon
 
 Pick **one** of the following.
 
+The same three-step flow works on any Ubuntu host — Hostinger VPS or
+exe.dev sandbox. Pick one, then follow the steps below.
+
 ### 3A. Hostinger VPS (Ubuntu 22.04 KVM)
 
 1. Buy/launch a KVM VPS from <https://www.hostinger.com?REFERRALCODE=FEGANGCHQ20C> (use this link for a 20% discount).
@@ -94,21 +97,7 @@ Pick **one** of the following.
    ```bash
    ssh root@<your-vps-ip>
    ```
-3. Install Node 24:
-   ```bash
-   curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
-   apt-get install -y nodejs
-   ```
-4. Install OpenClaw:
-   ```bash
-   npm install -g openclaw@latest
-   openclaw onboard
-   ```
-5. Run as a systemd user service so it survives logout:
-   ```bash
-   openclaw gateway install
-   openclaw gateway start
-   ```
+3. Continue with the **Ubuntu install steps** below.
 
 ![](screenshots/03-hostinger-ssh.png)
 
@@ -116,15 +105,31 @@ Pick **one** of the following.
 
 1. Sign up at <https://exe.dev/> and create a new dev sandbox.
 2. Open the web terminal.
-3. Install Node + OpenClaw:
-   ```bash
-   npm install -g openclaw@latest
-   openclaw onboard --install-daemon
-   ```
-4. **Note**: exe.dev storage may be ephemeral — back up `~/.openclaw/` if
-   you want to persist agent state across rebuilds.
+3. Continue with the **Ubuntu install steps** below.
+
+> **Note**: exe.dev storage may be ephemeral — back up `~/.openclaw/` if
+> you want to persist agent state across rebuilds.
 
 ![](screenshots/04-exedev-terminal.png)
+
+### Ubuntu install steps (VPS or exe.dev)
+
+**Step 1 — Install Node.js 24:**
+```bash
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt-get install -y nodejs
+node -v && npm -v
+```
+
+**Step 2 — Install OpenClaw globally:**
+```bash
+sudo npm install -g openclaw@latest
+```
+
+**Step 3 — Run the onboarding wizard:**
+```bash
+openclaw onboard
+```
 
 ---
 
