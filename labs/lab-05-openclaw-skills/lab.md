@@ -1,62 +1,60 @@
 # Lab 5 — OpenClaw Skills
 
-Extend your agent with pre-built skills from the ClawHub marketplace. Skills add specialised capabilities — research, coding helpers, schedulers, and more — without writing any code.
+Extend your agent with pre-built skills from the ClawHub marketplace. Skills add specialised capabilities without writing any code.
 
-**Lab environment:** Hostinger VPS (from Lab 1) **or** Local machine with Docker Desktop
-
-**Prerequisite:** Lab 4 completed — tools (AgentMail, Agent Browser, Firecrawl) active.
+**Lab environment:** Hostinger VPS (from Lab 1) **or** Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)  
+**Prerequisite:** Lab 4 completed — browser and search tools working.  
 **Estimated time:** 20 minutes
 
----
-
-## Step 1 — Visit the ClawHub Marketplace
-
-Browse available skills at:
-
-**https://clawhub.ai/**
-
-Each skill page shows:
-- What the skill does
-- Commands it adds to your agent
-- Install command
+> **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw`.  
+> Example: `docker exec -it openclaw openclaw skills list`
 
 ---
 
-## Step 2 — Browse Skills from the CLI
+## Step 1 — Browse the ClawHub Marketplace
+
+Visit https://clawhub.ai to see all available skills.
+
+Or search from the CLI:
 
 ```bash
-openclaw skills list --available
+# VPS
+openclaw skills search research
+
+# Docker Desktop
+docker exec -it openclaw openclaw skills search research
 ```
 
-Expected output (sample):
+---
+
+## Step 2 — List Available Skills
+
+```bash
+# VPS
+openclaw skills list
+
+# Docker Desktop
+docker exec -it openclaw openclaw skills list
 ```
-SKILL              DESCRIPTION                        AUTHOR
-web-research       Deep web research with citations   ClawHub
-code-review        Review code and suggest fixes      ClawHub
-daily-briefing     Morning summary delivered at 8am   ClawHub
-stock-tracker      Real-time stock price alerts       ClawHub
-```
+
+Shows all skills — ready, needs setup, and available to install.
 
 ---
 
 ## Step 3 — Install a Skill from ClawHub
 
-Use the `npx clawhub@latest install` command with the skill name from the marketplace:
-
 ```bash
-npx clawhub@latest install web-research
+# VPS
+openclaw skills install @openclaw/web-research
+
+# Docker Desktop
+docker exec -it openclaw openclaw skills install @openclaw/web-research
 ```
 
 Expected output:
 ```
-Installing web-research skill...
-✓ Skill installed: web-research
-New command available: /web-research
-```
-
-**Docker users — run inside the container:**
-```bash
-docker exec openclaw npx clawhub@latest install web-research
+Installing @openclaw/web-research...
+✓ Skill installed.
 ```
 
 ---
@@ -64,29 +62,26 @@ docker exec openclaw npx clawhub@latest install web-research
 ## Step 4 — Install a Second Skill
 
 ```bash
-npx clawhub@latest install daily-briefing
-```
+# VPS
+openclaw skills install @openclaw/daily-briefing
 
-Expected output:
-```
-✓ Skill installed: daily-briefing
-New command available: /daily-briefing
+# Docker Desktop
+docker exec -it openclaw openclaw skills install @openclaw/daily-briefing
 ```
 
 ---
 
-## Step 5 — List Installed Skills
+## Step 5 — Check Skill Status
 
 ```bash
-openclaw skills list
+# VPS
+openclaw skills check
+
+# Docker Desktop
+docker exec -it openclaw openclaw skills check
 ```
 
-Expected output:
-```
-SKILL              STATUS     COMMANDS
-web-research       active     /web-research
-daily-briefing     active     /daily-briefing
-```
+Shows which skills are ready and which need additional setup.
 
 ---
 
@@ -102,29 +97,17 @@ Expected: Agent performs a web search with citations and returns a researched an
 
 ---
 
-## Step 7 — Update a Skill
+## Step 7 — Update Skills
 
 ```bash
-npx clawhub@latest update web-research
+# VPS
+openclaw skills update
+
+# Docker Desktop
+docker exec -it openclaw openclaw skills update
 ```
 
-Expected:
-```
-✓ web-research updated to v1.x.x
-```
-
----
-
-## Step 8 — Remove a Skill
-
-```bash
-openclaw skills remove daily-briefing
-```
-
-Expected:
-```
-✓ daily-briefing removed.
-```
+Updates all installed ClawHub skills to the latest version.
 
 ---
 
@@ -132,9 +115,9 @@ Expected:
 
 | Check | Expected |
 |-------|----------|
-| `openclaw skills list` | `web-research` shown as `active` |
+| `openclaw skills list` | Installed skills shown as `ready` |
+| `openclaw skills check` | No missing requirements |
 | Chat: `/web-research What is OpenClaw?` | Agent returns researched answer with sources |
-| `openclaw skills list --available` | Marketplace list printed |
 
 ---
 
@@ -142,10 +125,10 @@ Expected:
 
 | Symptom | Fix |
 |---------|-----|
-| `npx: command not found` | Install Node.js: `apt install nodejs npm -y` (VPS) or `docker exec openclaw apt install nodejs npm -y` |
-| Skill installs but command not found in chat | Restart gateway: `openclaw gateway restart` |
-| ClawHub site not loading | Check your internet connection on the VPS |
-| Skill causes agent errors | Remove and reinstall: `openclaw skills remove SKILL && npx clawhub@latest install SKILL` |
+| Skill not found on ClawHub | Check the exact name: `openclaw skills search <keyword>` |
+| Skill installs but command not working in chat | Run `openclaw skills check` — may need additional setup |
+| `skills install` fails | Check internet connection — downloads from ClawHub |
+| Docker: skill installed but not active | Restart: `docker restart openclaw` |
 
 ---
 

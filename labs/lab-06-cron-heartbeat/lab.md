@@ -1,77 +1,89 @@
 # Lab 6 — Cron Jobs and Heartbeat
 
-Schedule recurring agent tasks with cron jobs and monitor agent uptime with the heartbeat feature. Also learn when to use each.
+Schedule recurring agent tasks with cron jobs and monitor agent uptime with heartbeat.
 
-**Lab environment:** Hostinger VPS (from Lab 1) **or** Local machine with Docker Desktop
-
-**Prerequisite:** Lab 5 completed — at least one channel active and at least one skill installed.
+**Lab environment:** Hostinger VPS (from Lab 1) **or** Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)  
+**Prerequisite:** Lab 3 completed — at least one channel active.  
 **Estimated time:** 30 minutes
+
+> **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw`.  
+> Example: `docker exec -it openclaw openclaw cron list`
 
 ---
 
-## Cron vs Heartbeat — Decision Guide
+## Cron vs Heartbeat
 
 | Feature | Cron Jobs | Heartbeat |
 |---------|-----------|-----------|
 | Purpose | Run a task on a schedule | Confirm the agent is alive |
-| Trigger | Time-based (e.g. every morning) | Interval ping (e.g. every 30 min) |
-| Output | Task result sent to channel | Short status message sent to channel |
-| Use case | Daily reports, weekly research | Uptime monitoring, alerting |
-| Configured in | `openclaw cron` commands | `HEARTBEAT.md` or `openclaw heartbeat` |
+| Trigger | Time-based (e.g. every morning) | Interval ping |
+| Output | Task result sent to channel | Short status message |
+| Use case | Daily reports, weekly research | Uptime monitoring |
 
 ---
 
 ## Part A — Cron Jobs
 
-### Cron Syntax
-
-```
-<minute> <hour> <day-of-month> <month> <day-of-week>
-```
-
-| Symbol | Meaning |
-|--------|---------|
-| `*` | Every |
-| `0 9 * * *` | Every day at 9:00 AM |
-| `0 8 * * 1` | Every Monday at 8:00 AM |
-
----
-
-### Step A1 — Create a Daily Morning Briefing Cron
+### Step A1 — Create a Daily Morning Briefing
 
 ```bash
-openclaw cron create \
-  --schedule "0 9 * * *" \
-  --prompt "Summarise my unread email from the last 24 hours and give me today's top AI news" \
+# VPS
+openclaw cron add \
+  --cron "0 9 * * *" \
+  --name morning-briefing \
   --channel telegram \
-  --name morning-briefing
+  "Summarise today's top AI news"
+
+# Docker Desktop
+docker exec -it openclaw openclaw cron add \
+  --cron "0 9 * * *" \
+  --name morning-briefing \
+  --channel telegram \
+  "Summarise today's top AI news"
 ```
+
+Cron syntax: `minute hour day month weekday`  
+`0 9 * * *` = every day at 9:00 AM
 
 ---
 
 ### Step A2 — Create a Weekly Research Cron
 
 ```bash
-openclaw cron create \
-  --schedule "0 8 * * 1" \
-  --prompt "/web-research top AI agent news this week" \
+# VPS
+openclaw cron add \
+  --cron "0 8 * * 1" \
+  --name weekly-ai-news \
   --channel telegram \
-  --name weekly-ai-news
+  "Research top AI agent news this week and send a summary"
+
+# Docker Desktop
+docker exec -it openclaw openclaw cron add \
+  --cron "0 8 * * 1" \
+  --name weekly-ai-news \
+  --channel telegram \
+  "Research top AI agent news this week and send a summary"
 ```
+
+`0 8 * * 1` = every Monday at 8:00 AM
 
 ---
 
 ### Step A3 — List All Cron Jobs
 
 ```bash
+# VPS
 openclaw cron list
+
+# Docker Desktop
+docker exec -it openclaw openclaw cron list
 ```
 
 Expected output:
 ```
 NAME               SCHEDULE      CHANNEL     STATUS
-morning-briefing   0 9 * * *     telegram    active
-weekly-ai-news     0 8 * * 1     telegram    active
+morning-briefing   0 9 * * *     telegram    enabled
+weekly-ai-news     0 8 * * 1     telegram    enabled
 ```
 
 ---
@@ -79,24 +91,28 @@ weekly-ai-news     0 8 * * 1     telegram    active
 ### Step A4 — Run a Cron Immediately (Test)
 
 ```bash
+# VPS
 openclaw cron run morning-briefing
+
+# Docker Desktop
+docker exec -it openclaw openclaw cron run morning-briefing
 ```
 
-Expected: Telegram receives the morning briefing immediately without waiting for the schedule.
+Expected: Telegram receives the briefing without waiting for the schedule.
 
 ---
 
-### Step A5 — Pause and Resume a Cron
+### Step A5 — Disable and Enable a Cron
 
 ```bash
-openclaw cron pause morning-briefing
+# VPS
+openclaw cron disable morning-briefing
 openclaw cron list
-```
+openclaw cron enable morning-briefing
 
-Expected: `morning-briefing` shows status `paused`.
-
-```bash
-openclaw cron resume morning-briefing
+# Docker Desktop
+docker exec -it openclaw openclaw cron disable morning-briefing
+docker exec -it openclaw openclaw cron enable morning-briefing
 ```
 
 ---
@@ -104,79 +120,48 @@ openclaw cron resume morning-briefing
 ### Step A6 — Delete a Cron
 
 ```bash
-openclaw cron delete weekly-ai-news
-openclaw cron list
-```
+# VPS
+openclaw cron rm weekly-ai-news
 
-Expected: `weekly-ai-news` no longer in the list.
+# Docker Desktop
+docker exec -it openclaw openclaw cron rm weekly-ai-news
+```
 
 ---
 
 ## Part B — Heartbeat
 
-Heartbeat sends a regular ping to your channel to confirm the agent is alive and the gateway is running.
+Heartbeat sends a regular ping to confirm the agent and gateway are running.
 
-### Step B1 — Configure Heartbeat via HEARTBEAT.md
-
-```bash
-nano ~/.openclaw/HEARTBEAT.md
-```
-
-Add:
-```markdown
-# Heartbeat
-
-- interval: 30m
-- channel: telegram
-- message: "✅ OpenClaw is alive"
-```
-
-Save and exit (`Ctrl+X`, `Y`, `Enter`).
-
-**Docker users:**
-```bash
-docker exec -it openclaw nano /root/.openclaw/HEARTBEAT.md
-```
-
----
-
-### Step B2 — Enable Heartbeat via CLI
-
-Alternatively, use the CLI:
+### Step B1 — Enable Heartbeat
 
 ```bash
-openclaw heartbeat enable \
-  --interval 30m \
-  --channel telegram \
-  --message "✅ OpenClaw is alive"
+# VPS
+openclaw system heartbeat enable
+
+# Docker Desktop
+docker exec -it openclaw openclaw system heartbeat enable
 ```
 
----
-
-### Step B3 — Check Heartbeat Status
+### Step B2 — Check Last Heartbeat
 
 ```bash
-openclaw heartbeat status
+# VPS
+openclaw system heartbeat last
+
+# Docker Desktop
+docker exec -it openclaw openclaw system heartbeat last
 ```
 
-Expected output:
-```
-Heartbeat: enabled
-Interval:  30m
-Channel:   telegram
-Last ping: 2026-07-11 09:30:00
-```
-
----
-
-### Step B4 — Disable Heartbeat
+### Step B3 — Disable Heartbeat
 
 ```bash
-openclaw heartbeat disable
-openclaw heartbeat status
-```
+# VPS
+openclaw system heartbeat disable
 
-Expected: `Heartbeat: disabled`
+# Docker Desktop
+docker exec -it openclaw openclaw system heartbeat disable
+```
 
 ---
 
@@ -184,10 +169,9 @@ Expected: `Heartbeat: disabled`
 
 | Check | Expected |
 |-------|----------|
-| `openclaw cron list` | `morning-briefing` active |
-| `openclaw cron run morning-briefing` | Telegram receives the briefing |
-| `openclaw heartbeat status` | `enabled`, interval 30m |
-| Telegram after 30 min | ✅ heartbeat message arrives |
+| `openclaw cron list` | `morning-briefing` shown as `enabled` |
+| `openclaw cron run morning-briefing` | Telegram receives the briefing immediately |
+| `openclaw system heartbeat last` | Last heartbeat timestamp shown |
 
 ---
 
@@ -195,7 +179,14 @@ Expected: `Heartbeat: disabled`
 
 | Symptom | Fix |
 |---------|-----|
-| Cron does not fire on schedule | Check: `openclaw gateway status` — gateway must be running |
-| `cron run` returns error | Verify channel is active: `openclaw channel list` |
-| Heartbeat messages not arriving | Confirm telegram channel started: `openclaw channel start telegram` |
-| Docker: changes to HEARTBEAT.md not picked up | Restart container: `docker restart openclaw` |
+| Cron does not fire on schedule | Gateway must be running continuously — check `openclaw gateway status` |
+| `cron run` returns error | Verify channel is active: `openclaw channels status` |
+| Docker: cron fires but no Telegram message | Confirm bot token and pairing are still valid |
+| `cron rm` not found | Command is `rm` not `delete` |
+
+---
+
+## Reference
+
+- Cron docs: https://docs.openclaw.ai/cron
+- Heartbeat: https://docs.openclaw.ai/heartbeat

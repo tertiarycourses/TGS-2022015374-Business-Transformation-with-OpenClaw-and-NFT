@@ -1,170 +1,124 @@
 # Lab 7 — OpenClaw Security
 
-Apply the 10-step security hardening guide for OpenClaw. Protect your API keys, restrict channel access, sandbox the exec tool, and enable gateway authentication.
+Apply security hardening for OpenClaw: run a security audit, restrict channel access, set resource limits, and review agent identity files.
 
-**Lab environment:** Hostinger VPS (from Lab 1) **or** Local machine with Docker Desktop
-
-**Prerequisite:** Lab 3 completed — at least one channel running.
+**Lab environment:** Hostinger VPS (from Lab 1) **or** Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)  
+**Prerequisite:** Lab 3 completed — at least one channel running.  
 **Estimated time:** 30 minutes
+
+> **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw`.  
+> Config files are at `/home/node/.openclaw/` inside the container (not `/root/.openclaw/`).
 
 ---
 
-## Security Checklist (10 Steps)
+## Security Checklist
 
 | # | Step | Purpose |
 |---|------|---------|
-| 1 | Store API keys as environment variables | Never hardcode secrets |
-| 2 | Restrict channel access with an allowlist | Only authorised users can chat |
-| 3 | Set a gateway authentication token | Protect the local API |
-| 4 | Sandbox the exec tool | Limit shell access to a safe directory |
-| 5 | Disable unused tools | Reduce attack surface |
+| 1 | Run security audit | Find common misconfigurations |
+| 2 | Restrict channel access with pairing | Only approved users can chat |
+| 3 | Never hardcode API keys | Use env vars or volume-mounted secrets |
+| 4 | Set Docker resource limits | Prevent runaway containers |
+| 5 | Review SOUL.md and AGENTS.md | Control agent identity and permissions |
 | 6 | Enable audit logs | Track all agent activity |
 | 7 | Rotate API keys regularly | Limit damage from leaks |
-| 8 | Use HTTPS for webhook channels | Encrypt data in transit |
-| 9 | Set resource limits (Docker) | Prevent runaway containers |
-| 10 | Review SOUL.md and AGENTS.md | Control agent identity and permissions |
+| 8 | Use HTTPS for webhook channels (VPS) | Encrypt data in transit |
 
 ---
 
-## Step 1 — Store API Keys as Environment Variables
+## Step 1 — Run the Security Audit
 
-**Never put keys inside config files or chat messages.**
-
-**VPS — macOS / Linux:**
 ```bash
-export MINIMAX_API_KEY="eyJ..."
+# VPS
+openclaw security audit
+
+# Docker Desktop
+docker exec -it openclaw openclaw security audit
+```
+
+For a deeper check including live gateway probes:
+
+```bash
+# VPS
+openclaw security audit --deep
+
+# Docker Desktop
+docker exec -it openclaw openclaw security audit --deep
+```
+
+Review the output and address any flagged items.
+
+---
+
+## Step 2 — Restrict Channel Access
+
+OpenClaw uses **pairing** to control who can message the agent. Only approved users can interact with the bot.
+
+**See all pending pairing requests:**
+```bash
+# VPS
+openclaw pairing list
+
+# Docker Desktop
+docker exec -it openclaw openclaw pairing list
+```
+
+**Approve a specific user (e.g. from Lab 3):**
+```bash
+# VPS
+openclaw pairing approve telegram YOUR_PAIRING_CODE
+
+# Docker Desktop
+docker exec -it openclaw openclaw pairing approve telegram YOUR_PAIRING_CODE
+```
+
+Any user who has not been approved will receive `access not configured` when they message the bot.
+
+---
+
+## Step 3 — Never Hardcode API Keys
+
+**Bad — hardcoded in command:**
+```bash
+openclaw configure --section model
+# Then pasting key directly
+```
+
+**Good — store as environment variable first:**
+
+**VPS / macOS / Linux:**
+```bash
+export OPENAI_API_KEY="sk-..."
 export FIRECRAWL_API_KEY="fc-..."
-export AGENTMAIL_API_KEY="am-..."
-echo 'export MINIMAX_API_KEY="eyJ..."' >> ~/.bashrc
+echo 'export OPENAI_API_KEY="sk-..."' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-**Local — Windows PowerShell:**
+**Windows (PowerShell):**
 ```powershell
-[Environment]::SetEnvironmentVariable("MINIMAX_API_KEY","eyJ...","User")
-[Environment]::SetEnvironmentVariable("FIRECRAWL_API_KEY","fc-...","User")
+[Environment]::SetEnvironmentVariable("OPENAI_API_KEY","sk-...","User")
 ```
 
-Verify:
+**Docker Desktop — pass at container start:**
 ```bash
-echo $MINIMAX_API_KEY
-openclaw model test
+MSYS_NO_PATHCONV=1 docker run -d \
+  --name openclaw \
+  -p 18789:18789 \
+  -v openclaw-data:/home/node/.openclaw \
+  -e OPENAI_API_KEY="sk-..." \
+  openclaw/openclaw:latest
 ```
 
 ---
 
-## Step 2 — Restrict Channel Access with an Allowlist
+## Step 4 — Set Docker Resource Limits (Docker Desktop Only)
 
-Only users on the allowlist can send messages to your agent.
-
-```bash
-# Get your Telegram user ID from @userinfobot
-openclaw channel config telegram \
-  --allowlist-add YOUR_TELEGRAM_USER_ID
-
-# Verify
-openclaw channel config telegram --allowlist-show
-```
-
-Test: have a non-allowlisted person message the bot — they should receive `Access denied`.
-
----
-
-## Step 3 — Set a Gateway Authentication Token
-
-```bash
-openclaw config set gateway.auth-token "$(openssl rand -hex 32)"
-openclaw gateway restart
-openclaw gateway status
-```
-
-Expected: `Gateway auth: Token (enabled)`
-
-**Windows (PowerShell alternative):**
-```powershell
-$token = [System.Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
-openclaw config set gateway.auth-token $token
-```
-
----
-
-## Step 4 — Sandbox the Exec Tool
-
-The exec tool can run arbitrary shell commands. Restrict it to a safe directory.
-
-```bash
-mkdir -p ~/openclaw-sandbox
-openclaw tools config exec --sandbox-dir ~/openclaw-sandbox
-openclaw gateway restart
-```
-
-**Docker users — sandbox inside the container:**
-```bash
-docker exec openclaw mkdir -p /root/openclaw-sandbox
-docker exec openclaw openclaw tools config exec --sandbox-dir /root/openclaw-sandbox
-docker restart openclaw
-```
-
----
-
-## Step 5 — Disable Unused Tools
-
-```bash
-openclaw tools list
-openclaw tools disable exec   # if exec is not needed
-openclaw tools list | grep exec
-```
-
-Expected: `exec    disabled`
-
----
-
-## Step 6 — Enable and Review Audit Logs
-
-```bash
-openclaw logs --last 50
-openclaw logs --tool firecrawl --last 20
-openclaw logs --channel telegram --last 20
-```
-
-Export for review:
-```bash
-openclaw logs --export ~/openclaw-audit-$(date +%F).json
-```
-
----
-
-## Step 7 — Rotate API Keys
-
-```bash
-# Update the environment variable with the new key
-export MINIMAX_API_KEY="eyJ-new-key..."
-# Restart gateway to pick it up
-openclaw gateway restart
-openclaw model test
-```
-
----
-
-## Step 8 — Use HTTPS for Webhook Channels (VPS Only)
-
-If you expose the gateway via a domain, always use HTTPS. Install Certbot:
-
-```bash
-apt install certbot python3-certbot-nginx -y
-certbot --nginx -d YOUR_DOMAIN
-```
-
----
-
-## Step 9 — Set Docker Resource Limits (Docker Users Only)
-
-Prevent the container from consuming all system resources:
+Prevent the container from using all system memory and CPU:
 
 ```bash
 docker update openclaw \
-  --memory 512m \
-  --cpus 1.0
+  --memory 1g \
+  --cpus 1.5
 ```
 
 Verify:
@@ -174,22 +128,70 @@ docker stats openclaw --no-stream
 
 ---
 
-## Step 10 — Review SOUL.md and AGENTS.md
+## Step 5 — Review SOUL.md and AGENTS.md
 
-These files define your agent's identity and capabilities.
+These files define your agent's identity and permissions.
 
+**VPS:**
 ```bash
 cat ~/.openclaw/SOUL.md
 cat ~/.openclaw/AGENTS.md
 ```
 
-**Docker:**
+**Docker Desktop:**
 ```bash
-docker exec openclaw cat /root/.openclaw/SOUL.md
-docker exec openclaw cat /root/.openclaw/AGENTS.md
+docker exec openclaw cat /home/node/.openclaw/SOUL.md
+docker exec openclaw cat /home/node/.openclaw/AGENTS.md
 ```
 
 Remove any capabilities you did not intentionally grant.
+
+---
+
+## Step 6 — View Audit Logs
+
+```bash
+# VPS
+openclaw logs --limit 50
+
+# Docker Desktop
+docker exec -it openclaw openclaw logs --limit 50
+
+# Follow live:
+# VPS
+openclaw logs --follow
+
+# Docker Desktop
+docker exec -it openclaw openclaw logs --follow
+```
+
+---
+
+## Step 7 — Rotate API Keys
+
+1. Generate a new API key in the provider's dashboard
+2. Reconfigure OpenClaw:
+
+```bash
+# VPS
+openclaw configure --section model
+
+# Docker Desktop
+docker exec -it openclaw openclaw configure --section model
+```
+
+3. Revoke the old key in the provider's dashboard
+
+---
+
+## Step 8 — Use HTTPS for Webhook Channels (VPS Only)
+
+If you expose the gateway via a public domain, always use HTTPS:
+
+```bash
+apt install certbot python3-certbot-nginx -y
+certbot --nginx -d YOUR_DOMAIN
+```
 
 ---
 
@@ -197,11 +199,10 @@ Remove any capabilities you did not intentionally grant.
 
 | Check | Expected |
 |-------|----------|
-| `echo $MINIMAX_API_KEY` | Key printed (not empty) |
-| Telegram from non-allowlisted user | `Access denied` |
-| `openclaw gateway status` | `Auth: Token enabled` |
-| `openclaw tools list` | exec `sandboxed` or `disabled` |
-| `openclaw logs --last 20` | Recent activity visible |
+| `openclaw security audit` | No critical issues flagged |
+| `openclaw pairing list` | Only approved users listed |
+| `docker stats openclaw --no-stream` | Memory within limits |
+| `openclaw logs --limit 20` | Recent agent activity visible |
 
 ---
 
@@ -209,14 +210,14 @@ Remove any capabilities you did not intentionally grant.
 
 | Symptom | Fix |
 |---------|-----|
-| Model stops after key rotation | Re-export the env var and restart gateway |
-| Allowlist blocks your own messages | Add your Telegram user ID: `--allowlist-add YOUR_ID` |
-| Gateway fails after token set | Check: `openclaw config get gateway.auth-token` |
-| Docker stats not showing | Confirm container is running: `docker ps` |
+| Security audit shows API key in config | Re-configure using env vars — do not paste keys directly |
+| Unwanted user can message the bot | They were auto-approved — remove via `openclaw pairing list` to review |
+| Docker stats command errors | Confirm container is running: `docker ps` |
+| SOUL.md not found | File is created after first agent conversation |
 
 ---
 
 ## Reference
 
-- Security guide: https://docs.openclaw.ai/gateway/security
-- SOUL.md reference: https://docs.openclaw.ai/soul
+- Security: https://docs.openclaw.ai/gateway/security
+- Pairing: https://docs.openclaw.ai/pairing

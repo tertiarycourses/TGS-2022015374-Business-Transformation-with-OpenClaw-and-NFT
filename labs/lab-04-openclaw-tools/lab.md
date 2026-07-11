@@ -1,86 +1,81 @@
 # Lab 4 — OpenClaw Tools
 
-Enable and test the three core OpenClaw tools: AgentMail (email agent), Agent Browser (web browsing), and Firecrawl (web scraping).
+Enable and test the built-in browser tool and install Firecrawl for web scraping.
 
-**Lab environment:** Hostinger VPS (from Lab 1) **or** Local machine with Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)
-
-**Prerequisite:** Lab 3 completed — at least one channel (Telegram or WhatsApp) active.
+**Lab environment:** Hostinger VPS (from Lab 1) **or** Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)  
+**Prerequisite:** Lab 3 completed — at least one channel (Telegram or WhatsApp) active.  
 **Estimated time:** 30 minutes
 
+> **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw`.  
+> Example: `docker exec -it openclaw openclaw plugins list`
+
 ---
 
-## Tool A — AgentMail
+## Tool A — Agent Browser (Built-in, No Setup)
 
-AgentMail gives your agent a real email inbox to send and receive emails.
+The browser plugin is already installed and enabled in OpenClaw. No configuration needed.
 
-### Step A1 — Create an AgentMail Account
-
-Visit https://agentmail.to and sign up for a free account.
-
-### Step A2 — Get Your API Key
-
-In the AgentMail dashboard → **API Keys** → **Create key**.
-
-Copy your API key.
-
-### Step A3 — Add AgentMail to OpenClaw
+### Step A1 — Confirm Browser Plugin is Enabled
 
 ```bash
-openclaw tools add agentmail \
-  --api-key YOUR_AGENTMAIL_API_KEY
+# VPS
+openclaw plugins list | grep browser
+
+# Docker Desktop
+docker exec -it openclaw openclaw plugins list | grep browser
 ```
 
 Expected output:
 ```
-✓ AgentMail tool added.
-Inbox: agent@agentmail.to
+browser    enabled    stock:browser/index.js
 ```
 
-### Step A4 — Test AgentMail via Chat
+### Step A2 — Test Browser via Chat
 
-In your Telegram (or WhatsApp) chat with the agent, send:
+In your Telegram or WhatsApp chat with the agent, send:
 
 ```
-Check my email
+Browse https://news.ycombinator.com and summarise the top 3 stories
 ```
 
-Expected: Agent replies listing recent emails in the AgentMail inbox.
+Expected: Agent fetches the page and replies with a summary.
 
 ---
 
-## Tool B — Agent Browser
+## Tool B — Web Search (DuckDuckGo)
 
-Agent Browser lets your agent browse web pages and interact with them.
+The DuckDuckGo search plugin is bundled but disabled by default. Enable it for free web search.
 
-### Step B1 — Enable Agent Browser
-
-Agent Browser is available at https://agent-browser.dev (powered by Vercel Labs).
+### Step B1 — Enable DuckDuckGo Search
 
 ```bash
-openclaw tools add agent-browser \
-  --api-key YOUR_AGENT_BROWSER_API_KEY
+# VPS
+openclaw plugins enable duckduckgo
+
+# Docker Desktop
+docker exec -it openclaw openclaw plugins enable duckduckgo
 ```
 
 Expected output:
 ```
-✓ Agent Browser tool added.
+Plugin duckduckgo enabled.
 ```
 
-### Step B2 — Test Agent Browser via Chat
+### Step B2 — Test Web Search via Chat
 
 In your chat, send:
 
 ```
-Browse https://news.ycombinator.com and summarise the top 5 stories
+Search the web: what is the weather in Singapore today?
 ```
 
-Expected: Agent fetches the page and replies with a summary of the top stories.
+Expected: Agent searches and returns current results.
 
 ---
 
-## Tool C — Firecrawl
+## Tool C — Firecrawl (Web Scraping)
 
-Firecrawl converts entire websites into clean, structured markdown for the agent to read.
+Firecrawl converts websites into clean structured text for the agent to read.
 
 ### Step C1 — Create a Firecrawl Account
 
@@ -88,21 +83,37 @@ Visit https://www.firecrawl.dev and sign up for a free account.
 
 ### Step C2 — Get Your Firecrawl API Key
 
-In the Firecrawl dashboard → **API Keys** → copy your key (starts with `fc-`).
+Firecrawl dashboard → **API Keys** → copy your key (starts with `fc-`).
 
-### Step C3 — Add Firecrawl to OpenClaw
+### Step C3 — Install the Firecrawl Plugin
 
 ```bash
-openclaw tools add firecrawl \
-  --api-key YOUR_FIRECRAWL_API_KEY
+# VPS
+openclaw plugins install clawhub:@openclaw/firecrawl-plugin
+
+# Docker Desktop
+docker exec -it openclaw openclaw plugins install clawhub:@openclaw/firecrawl-plugin
 ```
 
 Expected output:
 ```
-✓ Firecrawl tool added.
+Installing @openclaw/firecrawl-plugin...
+✓ Plugin installed.
 ```
 
-### Step C4 — Test Firecrawl via Chat
+### Step C4 — Configure the Firecrawl API Key
+
+```bash
+# VPS
+openclaw configure --section plugins
+
+# Docker Desktop
+docker exec -it openclaw openclaw configure --section plugins
+```
+
+Follow the prompts to enter your Firecrawl API key.
+
+### Step C5 — Test Firecrawl via Chat
 
 In your chat, send:
 
@@ -110,22 +121,18 @@ In your chat, send:
 Scrape https://docs.openclaw.ai and give me a summary
 ```
 
-Expected: Agent returns a clean summary of the OpenClaw documentation page.
+Expected: Agent returns a clean summary of the page.
 
 ---
 
-## List All Active Tools
+## List All Plugins
 
 ```bash
-openclaw tools list
-```
+# VPS
+openclaw plugins list
 
-Expected output:
-```
-TOOL             STATUS    PROVIDER
-agentmail        enabled   agentmail.to
-agent-browser    enabled   agent-browser.dev
-firecrawl        enabled   firecrawl.dev
+# Docker Desktop
+docker exec -it openclaw openclaw plugins list
 ```
 
 ---
@@ -134,10 +141,12 @@ firecrawl        enabled   firecrawl.dev
 
 | Check | Expected |
 |-------|----------|
-| `openclaw tools list` | All three tools shown as `enabled` |
-| Chat: `Check my email` | Email inbox summary in chat |
+| `openclaw plugins list \| grep browser` | `browser` shown as `enabled` |
+| `openclaw plugins list \| grep duckduckgo` | `duckduckgo` shown as `enabled` |
+| `openclaw plugins list \| grep firecrawl` | `firecrawl` shown as `enabled` |
 | Chat: `Browse https://...` | Agent returns page summary |
-| Chat: `Scrape https://...` | Agent returns scraped markdown summary |
+| Chat: `Search the web: ...` | Agent returns search results |
+| Chat: `Scrape https://...` | Agent returns scraped content |
 
 ---
 
@@ -145,16 +154,16 @@ firecrawl        enabled   firecrawl.dev
 
 | Symptom | Fix |
 |---------|-----|
-| `Invalid API key` for AgentMail | Re-copy the key from the dashboard — check for extra spaces |
-| Agent Browser returns "access denied" | Confirm your API key is valid at https://agent-browser.dev |
-| Firecrawl returns empty content | The target URL may block crawlers — try a different URL |
-| `openclaw tools list` shows tool as `disabled` | Run `openclaw tools enable TOOLNAME` |
+| Browser returns empty result | Check the URL is publicly accessible |
+| DuckDuckGo returns no results | Try a different search query |
+| Firecrawl install fails | Check internet connection — plugin downloads from ClawHub |
+| Firecrawl key rejected | Key must start with `fc-` — re-copy from firecrawl.dev dashboard |
+| Plugin enabled but agent not using it | Restart gateway: `docker restart openclaw` |
 
 ---
 
 ## Reference
 
-- Tools: https://docs.openclaw.ai/tools
-- AgentMail: https://agentmail.to
-- Agent Browser: https://agent-browser.dev
+- Plugins: https://docs.openclaw.ai/plugins
 - Firecrawl: https://www.firecrawl.dev
+- ClawHub: https://clawhub.ai

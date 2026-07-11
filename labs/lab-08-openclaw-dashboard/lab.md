@@ -1,74 +1,67 @@
 # Lab 8 — OpenClaw Dashboard
 
-Access the OpenClaw web dashboard to monitor your agent, view logs, manage tools, and inspect memory — all from a browser interface.
+Access the OpenClaw web dashboard to monitor your agent, view logs, manage plugins, and inspect memory — all from a browser.
 
-**Lab environment:** Hostinger VPS (from Lab 1) **or** Local machine with Docker Desktop
-
-**Prerequisite:** Lab 1 completed — gateway running on port 18789.
+**Lab environment:** Hostinger VPS (from Lab 1) **or** Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)  
+**Prerequisite:** Lab 1 completed — gateway running on port 18789.  
 **Estimated time:** 20 minutes
 
 ---
 
-## Option A — Local Machine (Docker or Direct Install)
+## Option A — Docker Desktop (Local Machine)
 
-### Step A1 — Start the Dashboard
+### Step A1 — Get Your Dashboard Token
+
+The dashboard requires a token for authentication. Retrieve it:
 
 ```bash
-openclaw dashboard
+docker exec openclaw sh -c 'node -e "const c=require(process.env.HOME+\"/.openclaw/openclaw.json\"); console.log(c.gateway.auth.token);"'
 ```
 
-Expected output:
-```
-OpenClaw Dashboard
-URL: http://localhost:18789
-Open this in your browser.
-```
+Copy the token printed.
 
-### Step A2 — Open in Browser
+### Step A2 — Open the Dashboard
 
-Open your web browser and go to:
+Open your browser and go to:
 
 ```
-http://localhost:18789
+http://localhost:18789/?token=YOUR_TOKEN_HERE
 ```
 
-You will see the OpenClaw dashboard with:
+Replace `YOUR_TOKEN_HERE` with the token from Step A1.
 
-| Panel | Description |
-|-------|-------------|
-| Overview | Agent name, model, uptime, gateway status |
-| Channels | Active channels (Telegram, WhatsApp) and their status |
-| Tools | Enabled tools and usage count |
-| Skills | Installed skills and commands |
-| Logs | Live log stream of agent activity |
-| Memory | Contents of MEMORY.md, SOUL.md, AGENTS.md |
-| Cron | Active cron jobs and next scheduled run |
+### Step A3 — Or Launch via CLI
+
+```bash
+docker exec -it openclaw openclaw dashboard
+```
+
+This prints the full dashboard URL with token included. Copy and open it in your browser.
 
 ---
 
 ## Option B — VPS (SSH Tunnel)
 
-The dashboard runs on the VPS but is not exposed publicly. Access it securely via an SSH tunnel.
+The dashboard runs on the VPS but is not exposed publicly. Access it securely via SSH tunnel.
 
-### Step B1 — Create an SSH Tunnel from Your Local Machine
+### Step B1 — Create an SSH Tunnel (on your local machine)
 
-Open a terminal **on your local machine** (not on the VPS) and run:
+Open a terminal **on your local machine** (not on the VPS):
 
 ```bash
 ssh -L 18789:localhost:18789 root@YOUR_VPS_IP
 ```
 
-Keep this terminal open — the tunnel stays active as long as the SSH session is open.
+Keep this terminal open.
 
-### Step B2 — Open the Dashboard in Your Local Browser
+### Step B2 — Get the Dashboard URL on the VPS
 
-While the SSH tunnel is active, open:
-
+On the VPS:
+```bash
+openclaw dashboard --no-open
 ```
-http://localhost:18789
-```
 
-This forwards your local port 18789 to the VPS port 18789 through the encrypted SSH tunnel.
+This prints the URL with token. Open it in your local browser while the SSH tunnel is active.
 
 ---
 
@@ -82,19 +75,23 @@ Click **Logs** in the sidebar. Send a message to your agent via Telegram — wat
 
 Click **Memory** to view:
 - `MEMORY.md` — persistent notes your agent writes to itself
-- `SOUL.md` — agent identity, persona, and values
+- `SOUL.md` — agent identity and persona
 - `AGENTS.md` — sub-agent definitions
-- `HEARTBEAT.md` — heartbeat configuration
 
-### Test a Tool from the Dashboard
+### View Plugins and Skills
 
-Click **Tools** → select `firecrawl` → **Test**. Enter a URL and click **Run**.
+Click **Plugins** to see all enabled and disabled plugins.  
+Click **Skills** to see installed skills and their status.
+
+### View Channel Status
+
+Click **Channels** to see Telegram and WhatsApp connection status.
 
 ---
 
 ## Step 4 — Restart the Gateway from the Dashboard
 
-Click **Gateway** → **Restart**. Wait 5 seconds, then refresh the page.
+Click **Gateway** → **Restart**. Wait 5 seconds and refresh the page.
 
 Expected: Dashboard reconnects and shows `Gateway: running`.
 
@@ -104,11 +101,10 @@ Expected: Dashboard reconnects and shows `Gateway: running`.
 
 | Check | Expected |
 |-------|----------|
-| `http://localhost:18789` opens | Dashboard loads in browser |
-| Logs panel | Real-time log entries visible |
-| Channels panel | Telegram / WhatsApp shown as active |
-| Memory panel | MEMORY.md contents visible |
-| VPS SSH tunnel: `http://localhost:18789` | Dashboard loads via SSH tunnel |
+| `http://localhost:18789/?token=YOUR_TOKEN` | Dashboard loads in browser |
+| Logs panel | Real-time log entries visible after sending a Telegram message |
+| Channels panel | Telegram shown as active |
+| VPS: `openclaw dashboard --no-open` | Full URL with token printed |
 
 ---
 
@@ -116,14 +112,15 @@ Expected: Dashboard reconnects and shows `Gateway: running`.
 
 | Symptom | Fix |
 |---------|-----|
-| `http://localhost:18789` — connection refused | Run `openclaw gateway status`; start if not running |
+| Browser shows empty reply | Add `?token=YOUR_TOKEN` to the URL |
+| `openclaw dashboard` opens wrong browser on VPS | Use `--no-open` and copy the URL manually |
 | VPS tunnel: dashboard not loading | Confirm SSH command is still running in another terminal |
 | Dashboard shows blank page | Hard-refresh the browser (Ctrl+Shift+R) |
-| Docker: port not reachable | Confirm container started with `-p 18789:18789` |
+| Token not found | Re-run: `docker exec openclaw sh -c 'node -e "const c=require(process.env.HOME+\"/.openclaw/openclaw.json\"); console.log(c.gateway.auth.token);"'` |
 
 ---
 
 ## Reference
 
 - Dashboard: https://docs.openclaw.ai/dashboard
-- SSH tunnel guide: https://support.hostinger.com/en/articles/ssh-tunneling
+- SSH tunneling: https://support.hostinger.com/en/articles/ssh-tunneling
