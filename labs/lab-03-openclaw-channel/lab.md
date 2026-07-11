@@ -82,11 +82,44 @@ telegram    running   @alfred_agent_bot
 
 ---
 
-### Step A4 — Test the Telegram Channel
+### Step A4 — Approve Your Telegram User
 
-1. Open Telegram
-2. Search for your bot (e.g. `@alfred_agent_bot`)
-3. Send: `Hello`
+The first time you message the bot, OpenClaw blocks access and asks for approval. This is a one-time pairing step.
+
+1. Open Telegram, search for your bot (e.g. `@alfred_agent_bot`) and send `/start`
+2. The bot replies with a **pairing code**, for example:
+
+```
+OpenClaw: access not configured.
+Your Telegram user id: 7720963181
+Pairing code: YTMKMQHW
+
+Ask the bot owner to approve with:
+openclaw pairing approve telegram YTMKMQHW
+```
+
+3. Copy the pairing code and run on your machine:
+
+```bash
+# VPS
+openclaw pairing approve telegram YOUR_PAIRING_CODE
+
+# Docker Desktop
+docker exec -it openclaw openclaw pairing approve telegram YOUR_PAIRING_CODE
+```
+
+Expected output:
+```
+✓ Telegram user approved.
+```
+
+### Step A5 — Test the Telegram Channel
+
+Send a message to your bot in Telegram:
+
+```
+Hello
+```
 
 Expected: The agent replies with a greeting.
 
@@ -189,7 +222,8 @@ docker exec -it openclaw openclaw channels list
 |---------|-----|
 | BotFather says "username already taken" | Choose a different username — must be unique globally |
 | `openclaw channel add` not found | Use `channels` (plural) — `openclaw channels add` |
-| Telegram bot does not reply | Run `openclaw channels status` — confirm status is `running` |
+| Telegram bot says "access not configured" | Run `openclaw pairing approve telegram YOUR_CODE` to approve your user |
+| Telegram bot does not reply after approval | Run `openclaw channels status` — confirm status is `running` |
 | QR code expires before scanning | Re-run `openclaw channels login --channel whatsapp` for a new QR |
 | WhatsApp says "Linked device limit reached" | Phone → Settings → Linked Devices → remove an old device |
 | Docker: command not found | Add `docker exec -it openclaw` before every `openclaw` command |
