@@ -1,9 +1,9 @@
 # Lab 5 — OpenClaw Skills
 
-Extend your agent with pre-built skills from the ClawHub marketplace. Skills add specialised capabilities without writing any code.
+Extend your agent with pre-built skills. Skills add specialised capabilities — weather, diagrams, health checks, and more — without writing any code.
 
 **Lab environment:** Hostinger VPS (from Lab 1) **or** Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)  
-**Prerequisite:** Lab 4 completed — browser and search tools working.  
+**Prerequisite:** Lab 4 completed — agent responding via Telegram or WhatsApp.  
 **Estimated time:** 20 minutes
 
 > **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw`.  
@@ -11,23 +11,7 @@ Extend your agent with pre-built skills from the ClawHub marketplace. Skills add
 
 ---
 
-## Step 1 — Browse the ClawHub Marketplace
-
-Visit https://clawhub.ai to see all available skills.
-
-Or search from the CLI:
-
-```bash
-# VPS
-openclaw skills search research
-
-# Docker Desktop
-docker exec -it openclaw openclaw skills search research
-```
-
----
-
-## Step 2 — List Available Skills
+## Step 1 — List Available Skills
 
 ```bash
 # VPS
@@ -37,37 +21,45 @@ openclaw skills list
 docker exec -it openclaw openclaw skills list
 ```
 
-Shows all skills — ready, needs setup, and available to install.
+Skills have two statuses:
+- `✓ ready` — works immediately, no extra setup
+- `△ needs setup` — requires a CLI tool or API key installed first
 
 ---
 
-## Step 3 — Install a Skill from ClawHub
+## Step 2 — Test the Weather Skill (Ready, No Setup)
 
-```bash
-# VPS
-openclaw skills install @openclaw/web-research
+The `weather` skill is bundled and ready. Test it in Telegram or WhatsApp:
 
-# Docker Desktop
-docker exec -it openclaw openclaw skills install @openclaw/web-research
+```
+What is the weather in Singapore today?
 ```
 
-Expected output:
-```
-Installing @openclaw/web-research...
-✓ Skill installed.
-```
+Expected: Agent fetches and returns the current weather for Singapore.
 
 ---
 
-## Step 4 — Install a Second Skill
+## Step 3 — Test the Diagram Maker Skill (Ready, No Setup)
 
-```bash
-# VPS
-openclaw skills install @openclaw/daily-briefing
+In your chat, send:
 
-# Docker Desktop
-docker exec -it openclaw openclaw skills install @openclaw/daily-briefing
 ```
+Draw a diagram showing how Docker containers and images relate to each other
+```
+
+Expected: Agent generates and displays an SVG diagram.
+
+---
+
+## Step 4 — Test the Browser Automation Skill (Ready, No Setup)
+
+In your chat, send:
+
+```
+Go to https://news.ycombinator.com and click on the first story link
+```
+
+Expected: Agent uses the browser tool with multi-step automation to navigate and return content.
 
 ---
 
@@ -81,23 +73,31 @@ openclaw skills check
 docker exec -it openclaw openclaw skills check
 ```
 
-Shows which skills are ready and which need additional setup.
+Shows which skills are ready and which require additional setup (CLI tools or API keys).
 
 ---
 
-## Step 6 — Test a Skill via Chat
+## Step 6 — Install a Skill from ClawHub
 
-In your Telegram or WhatsApp chat, send:
+Skills listed as `openclaw-extra` or not yet installed can be added from ClawHub:
 
+```bash
+# VPS
+openclaw skills install clawhub:healthcheck
+
+# Docker Desktop
+docker exec -it openclaw openclaw skills install clawhub:healthcheck
 ```
-/web-research What is OpenClaw?
-```
 
-Expected: Agent performs a web search with citations and returns a researched answer.
+Expected output:
+```
+Installing healthcheck...
+✓ Skill installed.
+```
 
 ---
 
-## Step 7 — Update Skills
+## Step 7 — Update All Skills
 
 ```bash
 # VPS
@@ -107,7 +107,23 @@ openclaw skills update
 docker exec -it openclaw openclaw skills update
 ```
 
-Updates all installed ClawHub skills to the latest version.
+Updates all installed skills to the latest version.
+
+---
+
+## Ready Skills Reference
+
+Skills marked `✓ ready` require no extra setup and work immediately in this lab:
+
+| Skill | What it does |
+|-------|-------------|
+| `weather` | Current weather and forecasts |
+| `diagram-maker` | Generate SVG/HTML diagrams |
+| `browser-automation` | Multi-step browser control |
+| `clawhub` | Search and install new skills |
+| `healthcheck` | Audit OpenClaw host security |
+| `notion` | Read and write Notion pages |
+| `spike` | Run throwaway prototypes |
 
 ---
 
@@ -115,9 +131,10 @@ Updates all installed ClawHub skills to the latest version.
 
 | Check | Expected |
 |-------|----------|
-| `openclaw skills list` | Installed skills shown as `ready` |
-| `openclaw skills check` | No missing requirements |
-| Chat: `/web-research What is OpenClaw?` | Agent returns researched answer with sources |
+| `openclaw skills list` | Skills shown with `✓ ready` or `△ needs setup` |
+| `openclaw skills check` | Ready skills show no missing requirements |
+| Chat: weather question | Agent returns current weather |
+| Chat: diagram request | Agent returns a diagram |
 
 ---
 
@@ -125,9 +142,9 @@ Updates all installed ClawHub skills to the latest version.
 
 | Symptom | Fix |
 |---------|-----|
-| Skill not found on ClawHub | Check the exact name: `openclaw skills search <keyword>` |
-| Skill installs but command not working in chat | Run `openclaw skills check` — may need additional setup |
-| `skills install` fails | Check internet connection — downloads from ClawHub |
+| Skill install returns 404 | Check exact skill name: `openclaw skills list` and use name from the table |
+| Skill shows `✓ ready` but chat does not respond | Send `openclaw skills check` — may need restart: `docker restart openclaw` |
+| `needs setup` skill not working | That skill requires a CLI tool or API key — check `openclaw skills check` for details |
 | Docker: skill installed but not active | Restart: `docker restart openclaw` |
 
 ---
