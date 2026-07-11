@@ -95,6 +95,36 @@ docker exec -it openclaw openclaw configure --section model
 # Select Ollama → host: http://host.docker.internal:11434 → model: llama3.2
 ```
 
+**Step 4 (Docker Desktop only) — Register the model in config:**
+
+The wizard sets the default model but does not register the model entry. Run this to fix it:
+
+```bash
+docker exec openclaw sh -c 'cat > /tmp/fix-ollama.js << '"'"'EOF'"'"'
+const fs=require("fs");
+const p=process.env.HOME+"/.openclaw/openclaw.json";
+const c=JSON.parse(fs.readFileSync(p));
+if(!c.models) c.models={};
+if(!c.models.providers) c.models.providers={};
+if(!c.models.providers.ollama) c.models.providers.ollama={api:"ollama",baseUrl:"http://host.docker.internal:11434",models:[]};
+if(!c.models.providers.ollama.models) c.models.providers.ollama.models=[];
+const exists=c.models.providers.ollama.models.find(function(m){return m.id==="llama3.2";});
+if(!exists) c.models.providers.ollama.models.push({id:"llama3.2",name:"llama3.2"});
+c.models.providers.ollama.baseUrl="http://host.docker.internal:11434";
+fs.writeFileSync(p,JSON.stringify(c,null,2));
+console.log("done");
+EOF'
+MSYS_NO_PATHCONV=1 docker exec openclaw node /tmp/fix-ollama.js
+```
+
+Expected output: `done`
+
+**Step 5 — Set as default and restart:**
+```bash
+docker exec -it openclaw openclaw models set ollama/llama3.2
+docker restart openclaw
+```
+
 ---
 
 ## Strategy 4 — Context Compaction
@@ -165,6 +195,8 @@ In the wizard:
 |---------|-----|
 | After switching model, agent stops responding | Re-run `openclaw configure --section model` and re-enter credentials |
 | Ollama unreachable from Docker | Use `http://host.docker.internal:11434` not `localhost` |
+| `Unknown model: ollama/llama3.2` error in logs | Run Step 4 above — the model must be registered in `models.providers.ollama.models[]` |
+| Git Bash `!` expansion error in script | Use `MSYS_NO_PATHCONV=1` prefix before `docker exec` commands with Linux paths |
 | Context compaction causes incomplete answers | Increase threshold: `openclaw config set context.compaction-threshold 100000` |
 | Groq rate limits | Free tier has rate limits — wait 1 minute and retry |
 

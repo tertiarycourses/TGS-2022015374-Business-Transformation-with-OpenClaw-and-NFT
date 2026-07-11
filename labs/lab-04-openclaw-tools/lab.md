@@ -3,11 +3,25 @@
 Enable and test the built-in browser tool and install Firecrawl for web scraping.
 
 **Lab environment:** Hostinger VPS (from Lab 1) **or** Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)  
-**Prerequisite:** Lab 3 completed — at least one channel (Telegram or WhatsApp) active.  
+**Prerequisite:** Lab 2 completed (working AI model) + Lab 3 completed (at least one channel active).  
 **Estimated time:** 30 minutes
 
 > **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw`.  
 > Example: `docker exec -it openclaw openclaw plugins list`
+
+> **Important:** The browser, search, and scraping tools all require a working AI model to process results. If your cloud API keys have quota issues, configure Ollama (free, local) from Lab 9 Strategy 3 before continuing this lab.
+
+---
+
+## Pre-check — Verify Model is Working
+
+Before testing any tool, confirm the agent responds in Telegram or WhatsApp:
+
+```
+Hello, are you working?
+```
+
+Expected: Agent replies normally. If you see "Something went wrong", fix the model first (see Troubleshooting below).
 
 ---
 
@@ -160,6 +174,7 @@ docker exec -it openclaw openclaw plugins list
 | Firecrawl install fails | Check internet connection — plugin downloads from ClawHub |
 | Firecrawl key rejected | Key must start with `fc-` — re-copy from firecrawl.dev dashboard |
 | Plugin enabled but agent not using it | Restart gateway: `docker restart openclaw` |
+| Agent replies "Something went wrong" | The AI model is failing — check `openclaw logs --limit 20`. If all providers fail, configure Ollama (free, local) following Lab 9 Strategy 3 |
 
 ---
 
