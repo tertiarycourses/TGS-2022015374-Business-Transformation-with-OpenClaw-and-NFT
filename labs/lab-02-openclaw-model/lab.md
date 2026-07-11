@@ -1,6 +1,8 @@
 # Lab 2 — OpenClaw Model
 
-Connect OpenClaw to a large language model (LLM). Choose one of the five providers below.
+Connect OpenClaw to a large language model (LLM). Choose one of the six providers below.
+
+> **No API key?** Use **Option F — Ollama**. It runs a model locally on your machine with no account, no credit card, and no cost.
 
 **Lab environment:** Hostinger VPS (from Lab 1) **or** Local machine with Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)
 
@@ -188,11 +190,58 @@ Model:    gpt-4o-mini (default)
 
 ---
 
-## Option E — Ollama (Local Model, No API Key, No Cost)
+## Option E — Google Gemini (API Key)
+
+### Step E1 — Get Your API Key
+
+Visit https://aistudio.google.com/app/apikey → **Create API Key**.  
+Copy the key — it starts with `AIza`.
+
+### Step E2 — Configure OpenClaw
+
+**VPS:**
+```bash
+openclaw model set google \
+  --api-key YOUR_GOOGLE_API_KEY \
+  --model gemini-2.0-flash
+```
+
+**Docker Desktop:**
+```bash
+docker exec -it openclaw openclaw model set google \
+  --api-key YOUR_GOOGLE_API_KEY \
+  --model gemini-2.0-flash
+```
+
+Available Google models:
+
+| Model | Speed | Cost | Best for |
+|-------|-------|------|----------|
+| `gemini-2.0-flash` | Fastest | Low | General agent tasks (recommended) |
+| `gemini-2.0-pro` | Medium | Medium | Complex reasoning |
+| `gemini-2.5-pro` | Slower | Higher | Advanced multimodal tasks |
+
+### Step E3 — Test
+
+```bash
+openclaw model test
+# Docker: docker exec -it openclaw openclaw model test
+```
+
+Expected output:
+```
+Provider: google
+Model:    gemini-2.0-flash
+Status:   ✓ Connected
+```
+
+---
+
+## Option F — Ollama (Local Model, No API Key, No Cost)
 
 Run a model completely on your own machine.
 
-### Step E1 — Install Ollama
+### Step F1 — Install Ollama
 
 **macOS / Linux:**
 ```bash
@@ -202,13 +251,13 @@ curl -fsSL https://ollama.com/install.sh | sh
 **Windows:**  
 Download the installer from https://ollama.com/download and run it.
 
-### Step E2 — Pull a Model
+### Step F2 — Pull a Model
 
 ```bash
 ollama pull llama3.2
 ```
 
-### Step E3 — Configure OpenClaw
+### Step F3 — Configure OpenClaw
 
 **VPS:**
 ```bash
@@ -226,7 +275,7 @@ docker exec -it openclaw openclaw model set ollama \
 
 > On Docker Desktop, use `host.docker.internal` instead of `localhost` to reach Ollama running on the host machine.
 
-### Step E4 — Test
+### Step F4 — Test
 
 ```bash
 openclaw model test
