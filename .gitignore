@@ -1,0 +1,5 @@
+screenshots/
+__pycache__/
+*.pptx
+WSQ*.pdf
+*.pyc
