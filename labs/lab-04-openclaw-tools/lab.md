@@ -19,15 +19,16 @@ The browser plugin is already installed and enabled in OpenClaw. No configuratio
 
 ```bash
 # VPS
-openclaw plugins list | grep browser
+openclaw plugins inspect browser
 
 # Docker Desktop
-docker exec -it openclaw openclaw plugins list | grep browser
+docker exec -it openclaw openclaw plugins inspect browser
 ```
 
-Expected output:
+Expected output includes:
 ```
-browser    enabled    stock:browser/index.js
+Status: loaded
+id: browser
 ```
 
 ### Step A2 — Test Browser via Chat
@@ -141,9 +142,9 @@ docker exec -it openclaw openclaw plugins list
 
 | Check | Expected |
 |-------|----------|
-| `openclaw plugins list \| grep browser` | `browser` shown as `enabled` |
-| `openclaw plugins list \| grep duckduckgo` | `duckduckgo` shown as `enabled` |
-| `openclaw plugins list \| grep firecrawl` | `firecrawl` shown as `enabled` |
+| `openclaw plugins inspect browser` | Status: loaded |
+| `openclaw plugins inspect duckduckgo` | Status: loaded |
+| `openclaw plugins inspect firecrawl-plugin` | Status: loaded |
 | Chat: `Browse https://...` | Agent returns page summary |
 | Chat: `Search the web: ...` | Agent returns search results |
 | Chat: `Scrape https://...` | Agent returns scraped content |
