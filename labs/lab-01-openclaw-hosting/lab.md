@@ -94,10 +94,11 @@ latest: Pulling from openclaw/openclaw
 Status: Downloaded newer image for openclaw/openclaw:latest
 ```
 
-### Step B2 — Create the Config (Non-Interactive Setup)
+### Step B2 — Create the Config
 
-The gateway needs a config file before it can start. Run setup first:
+The gateway needs a config file before it can start. This step creates it and saves it to a named volume so it persists across container restarts.
 
+**Windows (Git Bash):**
 ```bash
 MSYS_NO_PATHCONV=1 docker run --rm \
   -v openclaw-data:/home/node/.openclaw \
@@ -105,7 +106,15 @@ MSYS_NO_PATHCONV=1 docker run --rm \
   sh -c "openclaw setup --non-interactive --mode local --accept-risk; echo 'setup done'"
 ```
 
-Expected output:
+**macOS / Linux:**
+```bash
+docker run --rm \
+  -v openclaw-data:/home/node/.openclaw \
+  openclaw/openclaw:latest \
+  sh -c "openclaw setup --non-interactive --mode local --accept-risk; echo 'setup done'"
+```
+
+Expected output (all platforms):
 ```
 Updated config: ~/.openclaw/openclaw.json
 Workspace OK: ~/.openclaw/workspace
@@ -113,14 +122,58 @@ Sessions OK: ~/.openclaw/agents/main/sessions
 setup done
 ```
 
-> The volume `openclaw-data` saves config to `/home/node/.openclaw` inside the container so it persists across restarts.
+> **Windows Git Bash note:** `MSYS_NO_PATHCONV=1` prevents Git Bash from converting Linux paths like `/home/node` to Windows paths before passing them to Docker. Always include it on Windows.
 
-### Step B3 — Start the OpenClaw Container
+### Step B3 — Set Gateway to LAN Mode
 
-Now start the daemon in background:
+By default the gateway only listens on loopback (127.0.0.1 inside the container) — the host browser cannot reach it. This step changes `bind` to `lan` so it listens on all interfaces.
 
+**Windows (Git Bash):**
+```bash
+MSYS_NO_PATHCONV=1 docker run --rm \
+  -v openclaw-data:/home/node/.openclaw \
+  openclaw/openclaw:latest \
+  node -e "
+const fs=require('fs');
+const f='/home/node/.openclaw/openclaw.json';
+const c=JSON.parse(fs.readFileSync(f));
+c.gateway.bind='lan';
+fs.writeFileSync(f,JSON.stringify(c,null,2));
+console.log('bind set to lan');
+"
+```
+
+**macOS / Linux:**
+```bash
+docker run --rm \
+  -v openclaw-data:/home/node/.openclaw \
+  openclaw/openclaw:latest \
+  node -e "
+const fs=require('fs');
+const f='/home/node/.openclaw/openclaw.json';
+const c=JSON.parse(fs.readFileSync(f));
+c.gateway.bind='lan';
+fs.writeFileSync(f,JSON.stringify(c,null,2));
+console.log('bind set to lan');
+"
+```
+
+Expected output: `bind set to lan`
+
+### Step B4 — Start the OpenClaw Container
+
+**Windows (Git Bash):**
 ```bash
 MSYS_NO_PATHCONV=1 docker run -d \
+  --name openclaw \
+  -p 18789:18789 \
+  -v openclaw-data:/home/node/.openclaw \
+  openclaw/openclaw:latest
+```
+
+**macOS / Linux:**
+```bash
+docker run -d \
   --name openclaw \
   -p 18789:18789 \
   -v openclaw-data:/home/node/.openclaw \
@@ -130,48 +183,37 @@ MSYS_NO_PATHCONV=1 docker run -d \
 | Flag | Purpose |
 |------|---------|
 | `-d` | Run in background (detached) |
-| `-p 18789:18789` | Expose gateway port |
-| `-v openclaw-data:/home/node/.openclaw` | Mount the config volume created in Step B2 |
+| `-p 18789:18789` | Expose gateway port to host |
+| `-v openclaw-data:/home/node/.openclaw` | Mount the config volume from Steps B2–B3 |
 
-Confirm the container is running:
-
+Confirm it is healthy (all platforms):
 ```bash
 docker ps
 ```
 
-Expected: `openclaw` with status `Up`.
+Expected: `openclaw` with status `Up (healthy)` and port `0.0.0.0:18789->18789/tcp`.
 
-### Step B4 — Verify Gateway
+### Step B5 — Get Your Dashboard Token
+
+The dashboard requires a token for authentication. Retrieve it from the config (all platforms):
 
 ```bash
-docker exec openclaw openclaw --version
-docker exec openclaw openclaw gateway status
+docker exec openclaw sh -c 'node -e "const c=require(process.env.HOME+\"/\.openclaw/openclaw.json\"); console.log(c.gateway.auth.token);"'
 ```
 
-Expected:
+Copy the token printed — you will need it in the next step.
+
+### Step B6 — Open the Dashboard
+
+Open your browser and navigate to (all platforms):
+
 ```
-openclaw/1.x.x linux-x64 node-v20.x.x
-Gateway: running
-Port:    18789
-```
-
-### Step B5 — Access OpenClaw CLI from Host
-
-To avoid typing `docker exec openclaw` every time, create a shell alias:
-
-**macOS / Linux:**
-```bash
-echo 'alias openclaw="docker exec -it openclaw openclaw"' >> ~/.zshrc
-source ~/.zshrc
+http://localhost:18789/?token=YOUR_TOKEN_HERE
 ```
 
-**Windows (PowerShell profile):**
-```powershell
-Add-Content $PROFILE 'function openclaw { docker exec -it openclaw openclaw @args }'
-. $PROFILE
-```
+Replace `YOUR_TOKEN_HERE` with the token copied from Step B5.
 
-Now you can simply type `openclaw gateway status` directly.
+You should see the OpenClaw web dashboard. You are now ready to proceed to Lab 2.
 
 ---
 
@@ -179,10 +221,11 @@ Now you can simply type `openclaw gateway status` directly.
 
 | Check | Expected |
 |-------|----------|
-| `openclaw --version` | Version string printed |
-| `openclaw gateway status` | `Gateway: running` on port 18789 |
+| VPS: `openclaw --version` | Version string printed |
+| VPS: `openclaw gateway status` | `Gateway: running` on port 18789 |
 | VPS: `systemctl status openclaw` | `Active: active (running)` |
-| Docker: `docker ps` | `openclaw` container status `Up` |
+| Docker: `docker ps` | `openclaw` container — status `Up (healthy)`, port `0.0.0.0:18789->18789/tcp` |
+| Browser: `http://localhost:18789/?token=YOUR_TOKEN` | OpenClaw dashboard loads |
 
 ---
 
@@ -194,10 +237,12 @@ Now you can simply type `openclaw gateway status` directly.
 | VPS: `openclaw: command not found` after install | Run `source ~/.bashrc` or reconnect SSH |
 | VPS: Port 18789 blocked | Open in Hostinger hPanel → Firewall → Allow 18789 TCP |
 | Docker: `Cannot connect to Docker daemon` | Start Docker Desktop first |
-| Docker: Container exits with code 78 | Run Step B2 (setup) first — the daemon needs config before it can start |
-| Docker: Config not found even after setup | Container runs as user `node` — volume must mount to `/home/node/.openclaw`, not `/root/.openclaw` |
-| Git Bash path errors in volume mounts | Prefix the `docker run` command with `MSYS_NO_PATHCONV=1` |
-| Docker: Port 18789 already in use | Stop whatever uses that port: `netstat -ano | findstr 18789` (Windows) |
+| Docker: Container exits with code 78 | Run Step B2 (setup) first — daemon needs config before starting |
+| Docker: Config not found even after setup | Volume must mount to `/home/node/.openclaw` (container runs as user `node`, not root) |
+| Git Bash path errors in volume mounts | Prefix every `docker run` with `MSYS_NO_PATHCONV=1` |
+| Docker: Browser shows empty reply or can't connect | Run Step B3 to set `bind=lan` — default is loopback-only |
+| Docker: Dashboard says "token missing" | Open URL as `http://localhost:18789/?token=YOUR_TOKEN` (see Step B5) |
+| Docker: Port 18789 already in use | `netstat -ano \| findstr 18789` (Windows) to find and stop the conflicting process |
 
 ---
 
