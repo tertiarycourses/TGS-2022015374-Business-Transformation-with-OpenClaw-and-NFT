@@ -35,7 +35,7 @@ Students may choose either environment for all labs:
 | 7 | [Lab 7 — OpenClaw Security](labs/lab-07-openclaw-security/lab.md) | 30 min | 10-step hardening guide, API keys, allowlist, sandbox |
 | 8 | [Lab 8 — OpenClaw Dashboard](labs/lab-08-openclaw-dashboard/lab.md) | 20 min | Web dashboard, SSH tunnel for VPS |
 | 9 | [Lab 9 — Cost Saving](labs/lab-09-cost-saving/lab.md) | 20 min | Model selection, context compaction, free tiers |
-| 10 | Lab 10 — Blockchain Invoice Verification | 30 min | Docker container, REST API register/verify, OpenClaw tool integration |
+| 10 | [Lab 10 — Blockchain Invoice Verification](labs/lab-10-blockchain-invoice/lab.md) | 30 min | Docker container, REST API register/verify, OpenClaw tool integration |
 
 **Total lab time: 270 minutes (~4 hours 30 minutes)**
 
