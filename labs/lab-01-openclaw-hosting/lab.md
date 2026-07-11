@@ -94,7 +94,26 @@ latest: Pulling from openclaw/openclaw
 Status: Downloaded newer image for openclaw/openclaw:latest
 ```
 
-### Step B2 — Run the OpenClaw Container
+### Step B2 — Run the Onboarding Wizard
+
+The onboarding wizard must run **before** starting the gateway — it creates the config file that the daemon needs.
+
+```bash
+docker run -it --rm \
+  -v openclaw-data:/root/.openclaw \
+  openclaw/openclaw:latest openclaw onboard
+```
+
+When prompted:
+1. Enter a display name (e.g. `Alfred`)
+2. Skip model setup for now — configure in Lab 2
+3. Start the gateway: `y`
+
+> The `-v openclaw-data:/root/.openclaw` volume saves the config so it persists when you restart the container.
+
+### Step B3 — Start the OpenClaw Container
+
+Now that the config exists, start the daemon in background:
 
 ```bash
 docker run -d \
@@ -108,18 +127,15 @@ docker run -d \
 |------|---------|
 | `-d` | Run in background (detached) |
 | `-p 18789:18789` | Expose gateway port |
-| `-v openclaw-data:/root/.openclaw` | Persist config and data across restarts |
+| `-v openclaw-data:/root/.openclaw` | Mount the config volume created in Step B2 |
 
-### Step B3 — Run the Onboarding Wizard
+Confirm the container is running:
 
 ```bash
-docker exec -it openclaw openclaw onboard
+docker ps
 ```
 
-When prompted:
-1. Enter a display name (e.g. `Alfred`)
-2. Skip model setup for now — configure in Lab 2
-3. Start the gateway: `y`
+Expected: `openclaw` with status `Up`.
 
 ### Step B4 — Verify Gateway
 
@@ -174,6 +190,7 @@ Now you can simply type `openclaw gateway status` directly.
 | VPS: `openclaw: command not found` after install | Run `source ~/.bashrc` or reconnect SSH |
 | VPS: Port 18789 blocked | Open in Hostinger hPanel → Firewall → Allow 18789 TCP |
 | Docker: `Cannot connect to Docker daemon` | Start Docker Desktop first |
+| Docker: Container exits with code 78 | Run Step B2 (onboard) first — the daemon needs config before it can start |
 | Docker: Port 18789 already in use | Stop whatever uses that port: `netstat -ano | findstr 18789` (Windows) |
 
 ---
