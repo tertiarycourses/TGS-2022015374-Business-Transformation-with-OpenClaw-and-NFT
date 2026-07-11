@@ -94,32 +94,36 @@ latest: Pulling from openclaw/openclaw
 Status: Downloaded newer image for openclaw/openclaw:latest
 ```
 
-### Step B2 — Run the Onboarding Wizard
+### Step B2 — Create the Config (Non-Interactive Setup)
 
-The onboarding wizard must run **before** starting the gateway — it creates the config file that the daemon needs.
+The gateway needs a config file before it can start. Run setup first:
 
 ```bash
-docker run -it --rm \
-  -v openclaw-data:/root/.openclaw \
-  openclaw/openclaw:latest openclaw onboard
+MSYS_NO_PATHCONV=1 docker run --rm \
+  -v openclaw-data:/home/node/.openclaw \
+  openclaw/openclaw:latest \
+  sh -c "openclaw setup --non-interactive --mode local --accept-risk; echo 'setup done'"
 ```
 
-When prompted:
-1. Enter a display name (e.g. `Alfred`)
-2. Skip model setup for now — configure in Lab 2
-3. Start the gateway: `y`
+Expected output:
+```
+Updated config: ~/.openclaw/openclaw.json
+Workspace OK: ~/.openclaw/workspace
+Sessions OK: ~/.openclaw/agents/main/sessions
+setup done
+```
 
-> The `-v openclaw-data:/root/.openclaw` volume saves the config so it persists when you restart the container.
+> The volume `openclaw-data` saves config to `/home/node/.openclaw` inside the container so it persists across restarts.
 
 ### Step B3 — Start the OpenClaw Container
 
-Now that the config exists, start the daemon in background:
+Now start the daemon in background:
 
 ```bash
-docker run -d \
+MSYS_NO_PATHCONV=1 docker run -d \
   --name openclaw \
   -p 18789:18789 \
-  -v openclaw-data:/root/.openclaw \
+  -v openclaw-data:/home/node/.openclaw \
   openclaw/openclaw:latest
 ```
 
@@ -127,7 +131,7 @@ docker run -d \
 |------|---------|
 | `-d` | Run in background (detached) |
 | `-p 18789:18789` | Expose gateway port |
-| `-v openclaw-data:/root/.openclaw` | Mount the config volume created in Step B2 |
+| `-v openclaw-data:/home/node/.openclaw` | Mount the config volume created in Step B2 |
 
 Confirm the container is running:
 
@@ -190,7 +194,9 @@ Now you can simply type `openclaw gateway status` directly.
 | VPS: `openclaw: command not found` after install | Run `source ~/.bashrc` or reconnect SSH |
 | VPS: Port 18789 blocked | Open in Hostinger hPanel → Firewall → Allow 18789 TCP |
 | Docker: `Cannot connect to Docker daemon` | Start Docker Desktop first |
-| Docker: Container exits with code 78 | Run Step B2 (onboard) first — the daemon needs config before it can start |
+| Docker: Container exits with code 78 | Run Step B2 (setup) first — the daemon needs config before it can start |
+| Docker: Config not found even after setup | Container runs as user `node` — volume must mount to `/home/node/.openclaw`, not `/root/.openclaw` |
+| Git Bash path errors in volume mounts | Prefix the `docker run` command with `MSYS_NO_PATHCONV=1` |
 | Docker: Port 18789 already in use | Stop whatever uses that port: `netstat -ano | findstr 18789` (Windows) |
 
 ---
