@@ -9,7 +9,7 @@ Connect OpenClaw to a large language model (LLM). Choose one of the six provider
 **Prerequisite:** Lab 1 completed — OpenClaw installed and gateway running.
 **Estimated time:** 30 minutes
 
-> **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw` — for example: `docker exec -it openclaw openclaw model set groq ...`
+> **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw` — for example: `docker exec -it openclaw openclaw models set groq ...`
 
 ---
 
@@ -30,14 +30,14 @@ Copy the key — it starts with `gsk_`.
 
 **VPS:**
 ```bash
-openclaw model set groq \
+openclaw models set groq \
   --api-key YOUR_GROQ_API_KEY \
   --model llama-3.3-70b-versatile
 ```
 
 **Docker Desktop:**
 ```bash
-docker exec -it openclaw openclaw model set groq \
+docker exec -it openclaw openclaw models set groq \
   --api-key YOUR_GROQ_API_KEY \
   --model llama-3.3-70b-versatile
 ```
@@ -45,8 +45,8 @@ docker exec -it openclaw openclaw model set groq \
 ### Step A4 — Test the Model
 
 ```bash
-openclaw model test
-# Docker: docker exec -it openclaw openclaw model test
+openclaw models test
+# Docker: docker exec -it openclaw openclaw models test
 ```
 
 Expected output:
@@ -70,14 +70,14 @@ Copy the key — it starts with `sk-`.
 
 **VPS:**
 ```bash
-openclaw model set openai \
+openclaw models set openai \
   --api-key YOUR_OPENAI_API_KEY \
   --model gpt-4o-mini
 ```
 
 **Docker Desktop:**
 ```bash
-docker exec -it openclaw openclaw model set openai \
+docker exec -it openclaw openclaw models set openai \
   --api-key YOUR_OPENAI_API_KEY \
   --model gpt-4o-mini
 ```
@@ -93,8 +93,8 @@ Available OpenAI models:
 ### Step B3 — Test
 
 ```bash
-openclaw model test
-# Docker: docker exec -it openclaw openclaw model test
+openclaw models test
+# Docker: docker exec -it openclaw openclaw models test
 ```
 
 Expected output:
@@ -117,14 +117,14 @@ Copy the key — it starts with `sk-ant-`.
 
 **VPS:**
 ```bash
-openclaw model set anthropic \
+openclaw models set anthropic \
   --api-key YOUR_ANTHROPIC_API_KEY \
   --model claude-haiku-4-5-20251001
 ```
 
 **Docker Desktop:**
 ```bash
-docker exec -it openclaw openclaw model set anthropic \
+docker exec -it openclaw openclaw models set anthropic \
   --api-key YOUR_ANTHROPIC_API_KEY \
   --model claude-haiku-4-5-20251001
 ```
@@ -140,8 +140,8 @@ Available Claude models:
 ### Step C3 — Test
 
 ```bash
-openclaw model test
-# Docker: docker exec -it openclaw openclaw model test
+openclaw models test
+# Docker: docker exec -it openclaw openclaw models test
 ```
 
 Expected output:
@@ -159,12 +159,12 @@ Status:   ✓ Connected
 
 **VPS:**
 ```bash
-openclaw model set openai --oauth
+openclaw models set openai --oauth
 ```
 
 **Docker Desktop:**
 ```bash
-docker exec -it openclaw openclaw model set openai --oauth
+docker exec -it openclaw openclaw models set openai --oauth
 ```
 
 ### Step D2 — Authorise in Browser
@@ -201,14 +201,14 @@ Copy the key — it starts with `AIza`.
 
 **VPS:**
 ```bash
-openclaw model set google \
+openclaw models set google \
   --api-key YOUR_GOOGLE_API_KEY \
   --model gemini-2.0-flash
 ```
 
 **Docker Desktop:**
 ```bash
-docker exec -it openclaw openclaw model set google \
+docker exec -it openclaw openclaw models set google \
   --api-key YOUR_GOOGLE_API_KEY \
   --model gemini-2.0-flash
 ```
@@ -224,8 +224,8 @@ Available Google models:
 ### Step E3 — Test
 
 ```bash
-openclaw model test
-# Docker: docker exec -it openclaw openclaw model test
+openclaw models test
+# Docker: docker exec -it openclaw openclaw models test
 ```
 
 Expected output:
@@ -261,14 +261,14 @@ ollama pull llama3.2
 
 **VPS:**
 ```bash
-openclaw model set ollama \
+openclaw models set ollama \
   --host http://localhost:11434 \
   --model llama3.2
 ```
 
 **Docker Desktop (Ollama on host machine):**
 ```bash
-docker exec -it openclaw openclaw model set ollama \
+docker exec -it openclaw openclaw models set ollama \
   --host http://host.docker.internal:11434 \
   --model llama3.2
 ```
@@ -278,8 +278,8 @@ docker exec -it openclaw openclaw model set ollama \
 ### Step F4 — Test
 
 ```bash
-openclaw model test
-# Docker: docker exec -it openclaw openclaw model test
+openclaw models test
+# Docker: docker exec -it openclaw openclaw models test
 ```
 
 Expected output:
@@ -295,8 +295,8 @@ Status:   ✓ Connected (local)
 
 | Check | Expected |
 |-------|----------|
-| `openclaw model list` | Configured provider shown with status `active` |
-| `openclaw model test` | `Status: ✓ Connected` |
+| `openclaw models list` | Configured provider shown with status `active` |
+| `openclaw models test` | `Status: ✓ Connected` |
 | Chat test via Telegram (after Lab 3) | Agent replies with correct model name |
 
 ---
