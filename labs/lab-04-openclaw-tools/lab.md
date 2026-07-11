@@ -9,31 +9,19 @@ Enable and test the built-in browser tool and install Firecrawl for web scraping
 > **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw`.  
 > Example: `docker exec -it openclaw openclaw plugins list`
 
-> **Important:** The browser, search, and scraping tools all require a working AI model to process results. If your cloud API keys have quota issues, configure Ollama (free, local) from Lab 9 Strategy 3 before continuing this lab.
+> **Docker Desktop users:** Use Ollama as the AI model for this lab. Cloud API keys (OpenAI, Groq, Gemini) have free-tier quota limits that block testing in a classroom environment. Ollama is free, runs on your machine, and has no quota.
 
 ---
 
-## Pre-check — Verify Model is Working
+## Step 0 — Set Up Ollama Before Testing Tools (Docker Desktop)
 
-Before testing any tool, confirm the agent responds in Telegram or WhatsApp:
+All tools in this lab require a working AI model to process results. Set up Ollama first — it is the recommended model for Docker Desktop.
 
-```
-Hello, are you working?
-```
-
-Expected: Agent replies normally. If you see "Something went wrong", the AI model is not configured — follow the steps below before continuing.
-
----
-
-## Fix: Configure Ollama as Free Local Model (Docker Desktop)
-
-If cloud API keys (OpenAI, Groq, Gemini) have quota or auth issues, use Ollama — it runs on your machine with no API key.
-
-### Step 1 — Install Ollama
+### Step 0.1 — Install Ollama
 
 Download and install from https://ollama.com/download (Windows). Launch the Ollama app — it runs in the system tray.
 
-### Step 2 — Pull a Model (PowerShell)
+### Step 0.2 — Pull a Model (PowerShell)
 
 ```powershell
 ollama pull llama3.2
@@ -41,7 +29,7 @@ ollama pull llama3.2
 
 Expected: `success` after download completes.
 
-### Step 3 — Configure OpenClaw to Use Ollama
+### Step 0.3 — Configure OpenClaw to Use Ollama
 
 ```bash
 docker exec -it openclaw openclaw configure --section model
@@ -49,7 +37,7 @@ docker exec -it openclaw openclaw configure --section model
 
 In the wizard: select **Ollama** → host: `http://host.docker.internal:11434` → model: `llama3.2`
 
-### Step 4 — Register the Model in Config (Docker Desktop only)
+### Step 0.4 — Register the Model in Config (Docker Desktop only)
 
 The wizard sets the default but does not register the model entry. Run this to fix it:
 
@@ -73,16 +61,22 @@ MSYS_NO_PATHCONV=1 docker exec openclaw node /tmp/fix-ollama.js
 
 Expected output: `done`
 
-### Step 5 — Set as Default and Restart
+### Step 0.5 — Set as Default and Restart
 
 ```bash
 docker exec -it openclaw openclaw models set ollama/llama3.2
 docker restart openclaw
 ```
 
-### Step 6 — Re-verify
+### Step 0.6 — Verify the Model is Working
 
-Send `Hello, are you working?` in Telegram. The agent should now reply using the local Ollama model.
+Send this in Telegram or WhatsApp:
+
+```
+Hello, are you working?
+```
+
+Expected: Agent replies normally. Once this works, proceed to Tool A below.
 
 ---
 
