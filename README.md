@@ -36,8 +36,9 @@ Students may choose either environment for all labs:
 | 8 | [Lab 8 — OpenClaw Dashboard](labs/lab-08-openclaw-dashboard/lab.md) | 20 min | Web dashboard, SSH tunnel for VPS |
 | 9 | [Lab 9 — Cost Saving](labs/lab-09-cost-saving/lab.md) | 20 min | Model selection, context compaction, free tiers |
 | 10 | [Lab 10 — Blockchain Invoice Verification](labs/lab-10-blockchain-invoice/lab.md) | 30 min | Docker container, REST API register/verify, OpenClaw tool integration |
+| 11 | [Lab 11 — Content & Video Production Team](labs/lab-11-openclaw-content-video/lab.md) | 30 min | Custom skill, sub-agent delegation (`sessions_spawn`), media generation tools, chat-based approval gate |
 
-**Total lab time: 270 minutes (~4 hours 30 minutes)**
+**Total lab time: 300 minutes (~5 hours)**
 
 ---
 
