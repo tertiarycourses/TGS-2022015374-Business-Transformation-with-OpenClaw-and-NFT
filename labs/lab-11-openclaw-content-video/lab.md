@@ -7,8 +7,8 @@ media generation tools and `sessions_spawn` sub-agent delegation — then pause
 for your approval in chat before anything is "published."
 
 **Lab environment:** Hostinger VPS (from Lab 1) **or** Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)
-**Prerequisite:** Lab 4 completed (tools working) + Lab 5 completed (skills install workflow understood)
-**Estimated time:** 30 minutes
+**Prerequisite:** Lab 3 completed (Telegram or WhatsApp channel connected and tested) + Lab 4 completed (tools working) + Lab 5 completed (skills install workflow understood)
+**Estimated time:** 35 minutes
 
 > **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw`.
 > Example: `docker exec -it openclaw openclaw skills list`
@@ -33,18 +33,90 @@ for this — the skill file is plain instructions the model reads.
 
 ---
 
-## Step 1 — Copy the Skill Into Your Workspace
+## Step 0 — Confirm Your Channel Is Still Connected
 
-The skill file lives in this lab's folder: `skills/video-content-team/SKILL.md`.
+This whole lab is driven by chatting with your agent in Telegram or WhatsApp,
+so confirm that channel from Lab 3 is still running before you install
+anything. This is the same on Docker Desktop and VPS — a container
+restart between labs does not affect a channel that was already paired,
+but it's worth 30 seconds to check.
 
 ```bash
-# VPS — clone this course repo if you haven't already, then:
-mkdir -p ~/.openclaw/skills
-cp -r labs/lab-11-openclaw-content-video/skills/video-content-team ~/.openclaw/skills/
+# VPS
+openclaw channels status
 
-# Docker Desktop — copy into the running container:
-docker cp labs/lab-11-openclaw-content-video/skills/video-content-team openclaw:/root/.openclaw/skills/video-content-team
+# Docker Desktop
+docker exec -it openclaw openclaw channels status
 ```
+
+Expected output:
+```
+CHANNEL     STATUS    ACCOUNT
+telegram    running   @your_bot_username
+```
+
+**Pass:** Your channel (Telegram and/or WhatsApp) shows `running`.
+
+**Fail — status does not show `running`, or the channel is missing
+entirely:** Go back to Lab 3 and re-run Steps A2-A4 (Telegram) or B1-B2
+(WhatsApp) — this lab does not re-cover channel setup or bot pairing.
+
+Now send a plain test message to confirm the agent actually replies, not
+just that the channel process is running:
+
+Open Telegram, find the bot you created in Lab 3 (search for the
+`@..._bot` username from `channels status` above — this is a message
+inside the Telegram/WhatsApp app itself, not a terminal command, even on
+Docker Desktop), and send:
+
+```
+Hello
+```
+
+**Pass:** Agent replies normally. If this doesn't work, fix it now —
+every later step in this lab depends on this chat working.
+
+**Fail:** No reply → run `docker restart openclaw` (Docker Desktop) or
+`sudo systemctl restart openclaw` (VPS), wait 10 seconds, and retry. Still
+nothing → revisit Lab 3's Troubleshooting table.
+
+---
+
+## Step 1 — Download the Skill File
+
+You do not need to clone this course repo — download the skill file
+directly with `curl`, the same way Lab 1 pulled files without cloning
+anything.
+
+```bash
+# VPS
+mkdir -p ~/.openclaw/skills/video-content-team
+curl -o ~/.openclaw/skills/video-content-team/SKILL.md \
+  https://raw.githubusercontent.com/tertiarycourses/TGS-2022015374-Business-Transformation-with-OpenClaw-and-NFT/video/labs/lab-11-openclaw-content-video/skills/video-content-team/SKILL.md
+
+# Docker Desktop — download to your machine, then copy into the container:
+curl -o SKILL.md \
+  https://raw.githubusercontent.com/tertiarycourses/TGS-2022015374-Business-Transformation-with-OpenClaw-and-NFT/video/labs/lab-11-openclaw-content-video/skills/video-content-team/SKILL.md
+docker exec openclaw mkdir -p /root/.openclaw/skills/video-content-team
+docker cp SKILL.md openclaw:/root/.openclaw/skills/video-content-team/SKILL.md
+```
+
+> This lab is currently on the `video` branch of the course repo. Once it's
+> merged to `main`, change `video` to `main` in the URL above.
+
+Expected: the `curl` command exits with no error and the file is non-empty.
+Quick check:
+
+```bash
+# VPS
+cat ~/.openclaw/skills/video-content-team/SKILL.md | head -3
+
+# Docker Desktop
+docker exec openclaw cat /root/.openclaw/skills/video-content-team/SKILL.md | head -3
+```
+
+You should see the `---` YAML frontmatter and `name: video-content-team`
+at the top.
 
 ---
 
@@ -85,7 +157,9 @@ generation (see Troubleshooting).
 
 ## Step 4 — Kick Off a Production Run
 
-In your Telegram or WhatsApp chat with the agent, send:
+Go back to the same Telegram or WhatsApp chat you tested in Step 0 (this
+is a message inside the app, not a terminal command — Docker Desktop
+users do not prefix this with `docker exec`) and send:
 
 ```
 Produce a 60-second video about "3 mistakes beginners make with Docker" for our YouTube Shorts channel
@@ -151,6 +225,8 @@ states plainly that this is a dry run (no real upload happened).
 
 | Check | Expected |
 |-------|----------|
+| `openclaw channels status` | Telegram and/or WhatsApp shows `running` |
+| Chat: `Hello` (Step 0) | Agent replies normally, before you install anything |
 | `openclaw skills check` | `video-content-team` shows `✓ ready` |
 | Chat: "Produce a 60-second video about..." | Agent researches, proposes 3 ideas, picks one |
 | Script + storyboard phases | Script, numbered scenes, and a generated thumbnail appear in chat |
@@ -164,6 +240,7 @@ states plainly that this is a dry run (no real upload happened).
 
 | Symptom | Fix |
 |---------|-----|
+| `channels status` shows nothing running, or you have no bot to message | You skipped or lost Lab 3's setup — this lab does not re-cover BotFather/QR pairing, go complete Lab 3 first |
 | Skill shows `△ needs setup` | Your current model/provider doesn't expose `video_generate`/`image_generate`/`tts` — check `openclaw skills check` for the specific missing requirement, or switch models with `openclaw models set` |
 | Agent skips straight to a script with no research | Skill not loaded — run `openclaw skills list` and confirm `video-content-team` appears; re-run Step 2 if missing |
 | Agent publishes without asking | Skill file wasn't copied correctly, or an older version is cached — re-copy the file and run `openclaw skills update` |
