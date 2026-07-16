@@ -97,18 +97,25 @@ curl -o ~/.openclaw/skills/video-content-team/SKILL.md \
 # Docker Desktop — download to your machine, then copy into the container:
 curl -o SKILL.md \
   https://raw.githubusercontent.com/tertiarycourses/TGS-2022015374-Business-Transformation-with-OpenClaw-and-NFT/video/labs/lab-11-openclaw-content-video/skills/video-content-team/SKILL.md
-MSYS_NO_PATHCONV=1 docker exec openclaw mkdir -p /root/.openclaw/skills/video-content-team
-MSYS_NO_PATHCONV=1 docker cp SKILL.md openclaw:/root/.openclaw/skills/video-content-team/SKILL.md
+MSYS_NO_PATHCONV=1 docker exec openclaw mkdir -p /home/node/.openclaw/skills/video-content-team
+MSYS_NO_PATHCONV=1 docker cp SKILL.md openclaw:/home/node/.openclaw/skills/video-content-team/SKILL.md
 ```
+
+> **Docker Desktop path:** the container runs as user `node`, not root —
+> its OpenClaw home is `/home/node/.openclaw` (this is the same path Lab
+> 1 mounts as a volume: `-v openclaw-data:/home/node/.openclaw`). Using
+> `/root/...` here fails with `Permission denied`, since `/root` belongs
+> to a user this container doesn't run as.
 
 > **Windows Git Bash users:** the `MSYS_NO_PATHCONV=1` prefix is required
 > on every `docker exec`/`docker cp` command below that contains a Linux
-> path like `/root/...` — Git Bash silently rewrites those paths before
-> Docker sees them otherwise (same issue Lab 1's Troubleshooting table
-> covers for `docker run`). Without it, `docker cp` can report "Successfully
-> copied" and still fail with `Could not find the file ... in container` on
-> the next command, because the path it actually wrote to wasn't the one
-> you typed. macOS/Linux users can ignore this prefix — it's a no-op there.
+> path like `/home/node/...` — Git Bash silently rewrites those paths
+> before Docker sees them otherwise (same issue Lab 1's Troubleshooting
+> table covers for `docker run`). Without it, `docker cp` can report
+> "Successfully copied" and still fail with `Could not find the file ...
+> in container` on the next command, because the path it actually wrote
+> to wasn't the one you typed. macOS/Linux users can ignore this prefix —
+> it's a no-op there.
 
 > This lab is currently on the `video` branch of the course repo. Once it's
 > merged to `main`, change `video` to `main` in the URL above.
@@ -121,7 +128,7 @@ Quick check:
 cat ~/.openclaw/skills/video-content-team/SKILL.md | head -3
 
 # Docker Desktop
-MSYS_NO_PATHCONV=1 docker exec openclaw cat /root/.openclaw/skills/video-content-team/SKILL.md | head -3
+MSYS_NO_PATHCONV=1 docker exec openclaw cat /home/node/.openclaw/skills/video-content-team/SKILL.md | head -3
 ```
 
 You should see the `---` YAML frontmatter and `name: video-content-team`
@@ -136,7 +143,7 @@ at the top.
 openclaw skills install ~/.openclaw/skills/video-content-team --as video-content-team
 
 # Docker Desktop
-MSYS_NO_PATHCONV=1 docker exec -it openclaw openclaw skills install /root/.openclaw/skills/video-content-team --as video-content-team
+MSYS_NO_PATHCONV=1 docker exec -it openclaw openclaw skills install /home/node/.openclaw/skills/video-content-team --as video-content-team
 ```
 
 Expected output:
@@ -250,6 +257,7 @@ states plainly that this is a dry run (no real upload happened).
 | Symptom | Fix |
 |---------|-----|
 | `channels status` shows nothing running, or you have no bot to message | You skipped or lost Lab 3's setup — this lab does not re-cover BotFather/QR pairing, go complete Lab 3 first |
+| `Permission denied` on `/root/...` (Docker Desktop) | The container runs as user `node`, not root — use `/home/node/.openclaw/...`, not `/root/.openclaw/...` (see Step 1) |
 | Skill shows `△ needs setup` | Your current model/provider doesn't expose `video_generate`/`image_generate`/`tts` — check `openclaw skills check` for the specific missing requirement, or switch models with `openclaw models set` |
 | Agent skips straight to a script with no research | Skill not loaded — run `openclaw skills list` and confirm `video-content-team` appears; re-run Step 2 if missing |
 | Agent publishes without asking | Skill file wasn't copied correctly, or an older version is cached — re-copy the file and run `openclaw skills update` |
