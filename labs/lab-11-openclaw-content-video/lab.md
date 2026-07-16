@@ -97,9 +97,18 @@ curl -o ~/.openclaw/skills/video-content-team/SKILL.md \
 # Docker Desktop — download to your machine, then copy into the container:
 curl -o SKILL.md \
   https://raw.githubusercontent.com/tertiarycourses/TGS-2022015374-Business-Transformation-with-OpenClaw-and-NFT/video/labs/lab-11-openclaw-content-video/skills/video-content-team/SKILL.md
-docker exec openclaw mkdir -p /root/.openclaw/skills/video-content-team
-docker cp SKILL.md openclaw:/root/.openclaw/skills/video-content-team/SKILL.md
+MSYS_NO_PATHCONV=1 docker exec openclaw mkdir -p /root/.openclaw/skills/video-content-team
+MSYS_NO_PATHCONV=1 docker cp SKILL.md openclaw:/root/.openclaw/skills/video-content-team/SKILL.md
 ```
+
+> **Windows Git Bash users:** the `MSYS_NO_PATHCONV=1` prefix is required
+> on every `docker exec`/`docker cp` command below that contains a Linux
+> path like `/root/...` — Git Bash silently rewrites those paths before
+> Docker sees them otherwise (same issue Lab 1's Troubleshooting table
+> covers for `docker run`). Without it, `docker cp` can report "Successfully
+> copied" and still fail with `Could not find the file ... in container` on
+> the next command, because the path it actually wrote to wasn't the one
+> you typed. macOS/Linux users can ignore this prefix — it's a no-op there.
 
 > This lab is currently on the `video` branch of the course repo. Once it's
 > merged to `main`, change `video` to `main` in the URL above.
@@ -112,7 +121,7 @@ Quick check:
 cat ~/.openclaw/skills/video-content-team/SKILL.md | head -3
 
 # Docker Desktop
-docker exec openclaw cat /root/.openclaw/skills/video-content-team/SKILL.md | head -3
+MSYS_NO_PATHCONV=1 docker exec openclaw cat /root/.openclaw/skills/video-content-team/SKILL.md | head -3
 ```
 
 You should see the `---` YAML frontmatter and `name: video-content-team`
@@ -127,7 +136,7 @@ at the top.
 openclaw skills install ~/.openclaw/skills/video-content-team --as video-content-team
 
 # Docker Desktop
-docker exec -it openclaw openclaw skills install /root/.openclaw/skills/video-content-team --as video-content-team
+MSYS_NO_PATHCONV=1 docker exec -it openclaw openclaw skills install /root/.openclaw/skills/video-content-team --as video-content-team
 ```
 
 Expected output:
