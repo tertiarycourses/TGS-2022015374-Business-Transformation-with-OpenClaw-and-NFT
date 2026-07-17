@@ -449,7 +449,7 @@ states plainly that this is a dry run (no real upload happened).
 | Symptom | Fix |
 |---------|-----|
 | `zsh: command not found: #` (macOS) | zsh doesn't treat `#` as a comment interactively by default — run `setopt interactivecomments` once, or paste only the real commands (see the macOS callout above) |
-| `curl: (6) Could not resolve host: raw.githubusercontent.com` | DNS/network issue on your machine, not this lab — test with `ping -c 1 raw.githubusercontent.com`; if it fails, try `networksetup -setdnsservers Wi-Fi 8.8.8.8 1.1.1.1` (macOS) or switch networks (VPN/campus Wi-Fi often blocks this), then retry the `curl` |
+| `curl: (6) Could not resolve host: raw.githubusercontent.com`, or browser loads the file but `curl` still can't | DNS/proxy issue on your machine, not this lab — test with `ping -c 1 raw.githubusercontent.com`; if it fails, try `networksetup -setdnsservers Wi-Fi 8.8.8.8 1.1.1.1` (macOS) or switch networks. If the file loads fine in a browser but `curl` still fails, a system proxy (common on corporate/campus networks) is likely configured for browsers only — skip `curl` entirely and use the [macOS Offline Fallback](#macos-offline-fallback-cant-curl-from-terminal) appendix below |
 | `channels status` shows nothing running, or you have no bot to message | You skipped or lost Lab 3's setup — this lab does not re-cover BotFather/QR pairing, go complete Lab 3 first |
 | `Permission denied` on `/root/...` (Docker Desktop) | The container runs as user `node`, not root — use `/home/node/.openclaw/...`, not `/root/.openclaw/...` (see Step 1) |
 | Skill shows `△ needs setup` | Your current model/provider doesn't expose `video_generate`/`image_generate`/`tts` — check `openclaw skills check` for the specific missing requirement, or switch models with `openclaw models set` |
@@ -483,3 +483,176 @@ states plainly that this is a dry run (no real upload happened).
 - Tools (media generation, sessions/agents): https://docs.openclaw.ai/tools
 - Multi-agent routing & delegation: https://docs.openclaw.ai/concepts/multi-agent
 - ClawHub marketplace: https://clawhub.ai
+
+---
+
+## macOS Offline Fallback (can't `curl` from Terminal)
+
+Some corporate/campus networks route browser traffic through a proxy that
+`curl` doesn't know about, so a page loads fine in Safari/Chrome but every
+`curl` in this lab fails with `Could not resolve host`. If that's you,
+skip `curl` entirely — paste the file contents directly into a local file
+with `cat`, then continue with the normal `docker` commands (no
+`MSYS_NO_PATHCONV` needed on macOS — that prefix is Windows Git Bash only).
+
+**Step 1's `SKILL.md`:**
+
+```bash
+cat > SKILL.md << 'EOF'
+---
+name: video-content-team
+description: Coordinates a short-form video production pipeline across four dedicated sub-agents (strategist, scriptwriter, producer, publisher) via sessions_spawn, with a human approval gate in this chat before publishing.
+metadata:
+  openclaw:
+    requires:
+      anyBins: []
+---
+
+You are the **Coordinator** for a short-form video production team made of
+four dedicated sub-agents, each running in its own workspace: `strategist`,
+`scriptwriter`, `producer`, and `publisher` (see Lab 11's `agents/` setup
+for what each one is instructed to do). You never do their work yourself —
+you delegate each phase to the matching agent with the `sessions_spawn`
+tool (set its target to that agent's id) and relay every result back into
+this chat, mirroring how a real production team hands off work between
+specialists.
+
+## Phase 1 — Strategist
+
+When the user asks to plan/produce a video (e.g. "produce a video about X
+for our channel"), spawn a session on `strategist` with the user's full
+request as the task. Wait for its result, then post the 3 proposed ideas
+and the chosen one (with reasoning) back into this chat before continuing.
+
+## Phase 2 — Scriptwriter
+
+Spawn a session on `scriptwriter`, passing the chosen idea from Phase 1 as
+the task. Post the finished script back into this chat.
+
+## Phase 3 — Producer
+
+Spawn a session on `producer`, passing the finished script as the task.
+Post the storyboard, thumbnail, and any generated media links back into
+this chat.
+
+## Phase 4 — Human Approval Gate (always required — no exceptions)
+
+After Phase 3 completes:
+
+1. Summarise everything so far (idea, script, storyboard, assets) in this
+   chat.
+2. Explicitly ask: "Reply APPROVE to publish, or tell me what to change."
+3. **Stop and wait for a reply in the chat.** Do not spawn `publisher`
+   until the user has explicitly approved. If they ask for changes, work
+   out which phase needs rework, re-spawn that specific agent with the
+   requested change, and ask again — do not assume silence means approval.
+
+## Phase 5 — Publisher (only after explicit approval)
+
+Spawn a session on `publisher`, passing the full approved package (idea,
+script, storyboard, asset references) as the task. Post its final
+title/description/tags/summary back into this chat, including its
+statement that this is a dry run.
+
+## Rules
+
+- Always relay each sub-agent's full result into this chat before moving
+  to the next phase — the user should see the whole trail, not just a
+  final answer.
+- Never spawn `publisher` without an explicit APPROVE from the user in
+  this chat. If the user says "just publish it" before Phase 4 has run,
+  show them the assets first and ask again.
+- If a sub-agent's spawn fails or times out (e.g. `producer`'s video
+  generation), report that plainly and continue with whatever it did
+  produce — don't silently retry more than once.
+EOF
+
+docker exec openclaw mkdir -p /home/node/.openclaw/skills/video-content-team
+docker cp SKILL.md openclaw:/home/node/.openclaw/skills/video-content-team/SKILL.md
+docker exec -it openclaw openclaw skills install /home/node/.openclaw/skills/video-content-team --as video-content-team
+```
+
+**Step 2b's four `AGENTS.md` files:**
+
+```bash
+mkdir -p agents/strategist agents/scriptwriter agents/producer agents/publisher
+
+cat > agents/strategist/AGENTS.md << 'EOF'
+# Content Strategist Agent
+
+Your only job: given a video topic request, use `web_search` to check
+current trending angles/formats for the topic and platform. If search comes
+back thin, fall back to proven short-form formats: myth vs reality,
+before/after, "3 mistakes beginners make", POV/day-in-the-life, fast
+tutorial.
+
+Propose 3 concrete ideas, each with: title, angle, hook (first 3 seconds),
+target audience. Pick ONE and state clearly which was chosen and why.
+
+Return only your idea proposals and final choice. Do not write scripts,
+storyboards, or generate any media — that is the next agent's job, not
+yours.
+EOF
+
+cat > agents/scriptwriter/AGENTS.md << 'EOF'
+# Scriptwriter Agent
+
+Your only job: given a chosen video topic/idea, write hook (must earn the
+next 3 seconds), body, and a clear call-to-action. Target ~60 seconds
+spoken (~150 words/minute — keep the script to roughly 130-160 words
+unless told a different target duration).
+
+Read the script back to yourself and cut anything that doesn't sound
+natural spoken aloud.
+
+Return only the finished script. Do not do research or generate media —
+that is not your job.
+EOF
+
+cat > agents/producer/AGENTS.md << 'EOF'
+# Video Producer Agent
+
+Your only job: given a finished script, break it into numbered scenes
+(2-4 seconds each): visual description + voiceover line per scene.
+
+Then call `image_generate` to produce a thumbnail concept (bold,
+high-contrast, large readable text overlay, 3 words max, matches the
+video's hook), call `video_generate` for any scene needing a full
+generated clip, and call `tts` to produce the voiceover audio track from
+the final script.
+
+If `video_generate` fails or times out, say so plainly, try once more at a
+reduced spec, and if it still fails, continue and return the storyboard,
+thumbnail, and voiceover you do have — do not retry more than twice total.
+
+Return the storyboard plus references to whatever assets you produced. Do
+not write the script or handle publishing — that is not your job.
+EOF
+
+cat > agents/publisher/AGENTS.md << 'EOF'
+# Publisher Agent
+
+Your only job: given an approved script/storyboard package, write an
+SEO-optimized final title (can differ from the working title), a
+description with a clear CTA and 3-5 relevant hashtags/tags, and
+summarize the final publish-ready package (title, description, tags,
+thumbnail, video asset, audio asset).
+
+This is always a dry run — do not actually upload anywhere unless a
+publishing tool/plugin has been explicitly configured for this workspace.
+Say so plainly if you're stopping short of a real upload.
+
+Only do this work if the coordinator tells you the user has explicitly
+approved the package. If that isn't stated in your task, ask the
+coordinator to confirm approval before proceeding.
+EOF
+
+for a in strategist scriptwriter producer publisher; do
+  docker exec openclaw mkdir -p /home/node/.openclaw/workspace-$a
+  docker cp agents/$a/AGENTS.md openclaw:/home/node/.openclaw/workspace-$a/AGENTS.md
+done
+```
+
+`patch-agents.js` (Step 2b) never used `curl` in the first place, so no
+change needed there — create it and run it exactly as written earlier in
+this lab.
