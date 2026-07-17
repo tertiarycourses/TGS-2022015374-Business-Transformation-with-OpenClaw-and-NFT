@@ -1,14 +1,15 @@
 # Lab 11 — Content & Video Production Team (OpenClaw Sub-Agents)
 
-Install a custom skill that turns your agent into a coordinated content
-production team: a Content Strategist, Scriptwriter, and Video Producer
-hand a video idea off to each other in sequence — using OpenClaw's built-in
-media generation tools and `sessions_spawn` sub-agent delegation — then pause
-for your approval in chat before anything is "published."
+Install a custom skill and four dedicated sub-agents that turn your setup
+into a real coordinated content production team: a Coordinator agent
+delegates each phase — Content Strategist, Scriptwriter, Video Producer,
+Publisher — to its own named sub-agent via OpenClaw's `sessions_spawn` tool,
+each running in its own workspace with single-purpose instructions, then
+pauses for your approval in chat before anything is "published."
 
 **Lab environment:** Hostinger VPS (from Lab 1) **or** Docker Desktop (Windows 10/11, macOS 12+, Ubuntu 22.04+)
 **Prerequisite:** Lab 3 completed (Telegram or WhatsApp channel connected and tested) + Lab 4 completed (tools working) + Lab 5 completed (skills install workflow understood)
-**Estimated time:** 35 minutes
+**Estimated time:** 45 minutes
 
 > **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw`.
 > Example: `docker exec -it openclaw openclaw skills list`
@@ -17,19 +18,22 @@ for your approval in chat before anything is "published."
 
 ## Overview
 
-| Phase | Role | What it does |
+| Phase | Agent | What it does |
 |-------|------|---------------|
-| 1 | Content Strategist | Researches trending angles (`web_search`), picks one topic |
-| 2 | Scriptwriter | Writes hook + body + CTA sized to ~60 seconds |
-| 3 | Video Producer | Storyboards scenes, generates thumbnail (`image_generate`), video clips (`video_generate`), voiceover (`tts`) |
-| 4 | Human Approval Gate | Always pauses in chat and waits for your explicit reply — no auto-publish |
-| 5 | Publisher | Writes final SEO title/description/tags, summarises the publish-ready package (dry run) |
+| 1 | `strategist` | Researches trending angles (`web_search`), picks one topic |
+| 2 | `scriptwriter` | Writes hook + body + CTA sized to ~60 seconds |
+| 3 | `producer` | Storyboards scenes, generates thumbnail (`image_generate`), video clips (`video_generate`), voiceover (`tts`) |
+| 4 | Coordinator (your default agent) | Human Approval Gate — always pauses in chat and waits for your explicit reply, no auto-publish |
+| 5 | `publisher` | Writes final SEO title/description/tags, summarises the publish-ready package (dry run) |
 
-This is delivered as a single **skill** (`video-content-team`) rather than
-separate agents — the skill instructs your existing agent to delegate the
-slow parts (research, asset generation) to background sub-agent runs via the
-`sessions_spawn` tool, which OpenClaw already provides. You never write code
-for this — the skill file is plain instructions the model reads.
+This is delivered as a **skill** (`video-content-team`, installed on your
+existing default agent) plus **four dedicated sub-agents**, each with its
+own workspace and single-purpose `AGENTS.md`. Your existing agent becomes
+the Coordinator: the skill instructs it to delegate each phase to the
+matching named sub-agent with the `sessions_spawn` tool — a real
+multi-agent pipeline, not one agent role-playing four jobs. You never
+write code for this — every agent's behaviour comes from plain-language
+instruction files the model reads.
 
 ---
 
@@ -154,6 +158,136 @@ Installing video-content-team...
 
 ---
 
+## Step 2b — Set Up the Sub-Agent Team
+
+So far your one agent does every phase itself. Now give it four dedicated
+teammates — `strategist`, `scriptwriter`, `producer`, `publisher` — each
+with its own workspace and its own single-purpose instructions. Your main
+agent becomes the **Coordinator**: it delegates each phase to the matching
+teammate with the `sessions_spawn` tool instead of doing the work itself.
+
+**Download each teammate's instructions:**
+
+```bash
+# VPS
+for a in strategist scriptwriter producer publisher; do
+  mkdir -p ~/.openclaw/workspace-$a
+  curl -o ~/.openclaw/workspace-$a/AGENTS.md \
+    https://raw.githubusercontent.com/tertiarycourses/TGS-2022015374-Business-Transformation-with-OpenClaw-and-NFT/video/labs/lab-11-openclaw-content-video/agents/$a/AGENTS.md
+done
+
+# Docker Desktop
+for a in strategist scriptwriter producer publisher; do
+  curl -o AGENTS-$a.md \
+    https://raw.githubusercontent.com/tertiarycourses/TGS-2022015374-Business-Transformation-with-OpenClaw-and-NFT/video/labs/lab-11-openclaw-content-video/agents/$a/AGENTS.md
+  MSYS_NO_PATHCONV=1 docker exec openclaw mkdir -p /home/node/.openclaw/workspace-$a
+  MSYS_NO_PATHCONV=1 docker cp AGENTS-$a.md openclaw:/home/node/.openclaw/workspace-$a/AGENTS.md
+done
+```
+
+**Register the four agents and allow the coordinator to spawn them.** This
+edits `openclaw.json`, so do it with a small script rather than typing JSON
+by hand — the same pattern used elsewhere in this course when a config
+needs more than a one-line change:
+
+```bash
+cat > patch-agents.js << 'EOF'
+const fs = require('fs');
+const JSON5 = require('json5');
+const p = process.env.OPENCLAW_CONFIG || '/home/node/.openclaw/openclaw.json';
+const cfg = JSON5.parse(fs.readFileSync(p, 'utf8'));
+
+cfg.agents = cfg.agents || {};
+cfg.agents.list = cfg.agents.list || [];
+
+const team = ['strategist', 'scriptwriter', 'producer', 'publisher'];
+for (const id of team) {
+  if (!cfg.agents.list.find(a => a.id === id)) {
+    cfg.agents.list.push({
+      id,
+      name: id[0].toUpperCase() + id.slice(1),
+      workspace: `/home/node/.openclaw/workspace-${id}`,
+    });
+  }
+}
+
+cfg.agents.defaults = cfg.agents.defaults || {};
+cfg.agents.defaults.subagents = cfg.agents.defaults.subagents || {};
+const allow = new Set(cfg.agents.defaults.subagents.allowAgents || []);
+team.forEach(id => allow.add(id));
+cfg.agents.defaults.subagents.allowAgents = Array.from(allow);
+
+fs.writeFileSync(p, JSON.stringify(cfg, null, 2));
+console.log('agents.list + subagents.allowAgents patched:', team);
+EOF
+```
+
+```bash
+# VPS
+OPENCLAW_CONFIG=~/.openclaw/openclaw.json node patch-agents.js
+
+# Docker Desktop
+MSYS_NO_PATHCONV=1 docker cp patch-agents.js openclaw:/tmp/patch-agents.js
+docker exec openclaw node /tmp/patch-agents.js
+```
+
+> **Why a script and not `openclaw configure`:** `openclaw configure` is
+> built for single-section interactive edits. Adding four agents plus an
+> allowlist entry is a structural change to `agents.list`, so a small node
+> script that reads, edits, and rewrites the JSON5 file directly is more
+> reliable — the same reasoning as Step 1's `MSYS_NO_PATHCONV` note: know
+> exactly what a command touches before running it against a live config.
+
+Restart so the new agents are picked up:
+
+```bash
+# VPS
+sudo systemctl restart openclaw
+
+# Docker Desktop
+docker restart openclaw
+```
+
+Verify all four exist:
+
+```bash
+# VPS
+openclaw agents list
+
+# Docker Desktop
+docker exec -it openclaw openclaw agents list
+```
+
+Expected: `strategist`, `scriptwriter`, `producer`, `publisher` all appear
+alongside your original default/coordinator agent.
+
+**Update the skill to the sub-agent-orchestrating version.** Re-download
+`SKILL.md` (Step 1) — it was rewritten to delegate via `sessions_spawn`
+instead of doing all phases inline — and reinstall:
+
+```bash
+# VPS
+curl -o ~/.openclaw/skills/video-content-team/SKILL.md \
+  https://raw.githubusercontent.com/tertiarycourses/TGS-2022015374-Business-Transformation-with-OpenClaw-and-NFT/video/labs/lab-11-openclaw-content-video/skills/video-content-team/SKILL.md
+openclaw skills update
+
+# Docker Desktop
+curl -o SKILL.md \
+  https://raw.githubusercontent.com/tertiarycourses/TGS-2022015374-Business-Transformation-with-OpenClaw-and-NFT/video/labs/lab-11-openclaw-content-video/skills/video-content-team/SKILL.md
+MSYS_NO_PATHCONV=1 docker cp SKILL.md openclaw:/home/node/.openclaw/skills/video-content-team/SKILL.md
+docker exec -it openclaw openclaw skills update
+```
+
+**Pass:** `openclaw agents list` shows all four teammates, and
+`openclaw skills check` still shows `video-content-team` as `✓ ready`.
+
+**Fail — `sessions_spawn` target not allowed / permission error when the
+coordinator tries to delegate:** confirm `agents.defaults.subagents.allowAgents`
+actually contains all four ids — re-run `patch-agents.js`, it's safe to run
+more than once (it skips ids that already exist).
+
+---
+
 ## Step 3 — Verify It's Ready
 
 ```bash
@@ -181,12 +315,15 @@ users do not prefix this with `docker exec`) and send:
 Produce a 60-second video about "3 mistakes beginners make with Docker" for our YouTube Shorts channel
 ```
 
-**Pass:** Agent researches the topic, proposes 3 ideas, picks one, and tells
-you which one and why (Phase 1).
+**Pass:** The Coordinator spawns `strategist`, which researches the topic,
+proposes 3 ideas, picks one — and the Coordinator relays which one and why
+back into this chat (Phase 1).
 
 **Fail:** Agent just writes a script with no research/idea step first →
-confirm the skill installed correctly (`openclaw skills list`), and that it
-shows as `✓ ready`, not `△ needs setup`.
+confirm the skill installed correctly (`openclaw skills list`, `✓ ready`
+not `△ needs setup`) and that `openclaw agents list` shows `strategist`
+(Step 2b) — if the sub-agent doesn't exist yet, the Coordinator has
+nothing to spawn and may fall back to doing the work itself.
 
 ---
 
@@ -260,18 +397,20 @@ states plainly that this is a dry run (no real upload happened).
 | `Permission denied` on `/root/...` (Docker Desktop) | The container runs as user `node`, not root — use `/home/node/.openclaw/...`, not `/root/.openclaw/...` (see Step 1) |
 | Skill shows `△ needs setup` | Your current model/provider doesn't expose `video_generate`/`image_generate`/`tts` — check `openclaw skills check` for the specific missing requirement, or switch models with `openclaw models set` |
 | Agent skips straight to a script with no research | Skill not loaded — run `openclaw skills list` and confirm `video-content-team` appears; re-run Step 2 if missing |
+| Coordinator does everything itself, never mentions `strategist`/`scriptwriter`/`producer`/`publisher` | Sub-agents weren't registered — re-run Step 2b's `patch-agents.js`, restart, then confirm `openclaw agents list` shows all four before retrying |
+| `sessions_spawn` error / delegation silently fails | `agents.defaults.subagents.allowAgents` doesn't include the target id — re-run `patch-agents.js` (Step 2b), it's safe to run more than once |
 | Agent publishes without asking | Skill file wasn't copied correctly, or an older version is cached — re-copy the file and run `openclaw skills update` |
-| Media generation takes a long time / times out | Normal for `video_generate` — it can take 1-2 minutes. If it fails outright, your provider may not support it; the skill will still complete Phases 1-2 without it |
+| Media generation takes a long time / times out | Normal for `video_generate` — it can take 1-2 minutes. If it fails outright, your provider may not support it; `producer` will still return the storyboard, thumbnail, and voiceover it did produce |
 | "Something went wrong" from the agent | Model provider issue, not this skill — check `openclaw logs --limit 20` |
 
 ---
 
 ## Extending This Lab
 
-- **Real sub-agent workspaces:** instead of relying on `sessions_spawn`
-  alone, define a dedicated agent for video production with its own
-  workspace via `openclaw agents add` and bind it to a separate Telegram
-  bot or WhatsApp number — see `/concepts/multi-agent` in the docs.
+- **Give a sub-agent its own channel:** bind `producer` to a separate
+  Telegram bot or WhatsApp number (`bindings` config) so heavy media
+  generation runs on a channel of its own instead of sharing the
+  Coordinator's — see `/concepts/multi-agent` in the docs.
 - **Real publishing:** install or write a plugin that calls the YouTube
   Data API and wire it in as a tool the Phase 5 instructions can call,
   instead of the current dry-run summary.
