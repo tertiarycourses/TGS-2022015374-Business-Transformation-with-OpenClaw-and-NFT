@@ -185,20 +185,41 @@ for a in strategist scriptwriter producer publisher; do
 done
 ```
 
-**Register the four agents and allow the coordinator to spawn them.** This
-edits `openclaw.json`, so do it with a small script rather than typing JSON
-by hand — the same pattern used elsewhere in this course when a config
-needs more than a one-line change:
+**Register the four agents (plus your existing default agent) and allow
+the coordinator to spawn them.** This edits `openclaw.json`, so do it with
+a small script rather than typing JSON by hand — the same pattern used
+elsewhere in this course when a config needs more than a one-line change.
+
+> **Why the script explicitly re-adds a `main` agent:** if you have never
+> touched `agents.list` before, OpenClaw runs one *implicit* default agent
+> with id `main` and workspace `~/.openclaw/workspace` — it doesn't appear
+> in the config file at all. The moment `agents.list` gets *any* explicit
+> entries (like our four teammates), that implicit default goes away, and
+> your existing channel binding (which points at agent id `main`) breaks
+> with `Unknown agent id "main" (not in agents.list)`. The script below
+> adds `main` back explicitly, with its default path, so your existing
+> Telegram/WhatsApp connection keeps working.
+
+> **Why plain `JSON`, not `json5`:** `openclaw.json` is written by the CLI
+> as plain valid JSON (no comments), and the `json5` npm package generally
+> is not installed anywhere Node can resolve it from a one-off script path
+> like `/tmp` — requiring it will fail with `Cannot find module 'json5'`.
+> Node's built-in `JSON.parse`/`JSON.stringify` handles this file fine.
 
 ```bash
 cat > patch-agents.js << 'EOF'
 const fs = require('fs');
-const JSON5 = require('json5');
 const p = process.env.OPENCLAW_CONFIG || '/home/node/.openclaw/openclaw.json';
-const cfg = JSON5.parse(fs.readFileSync(p, 'utf8'));
+const cfg = JSON.parse(fs.readFileSync(p, 'utf8'));
 
 cfg.agents = cfg.agents || {};
 cfg.agents.list = cfg.agents.list || [];
+
+// Preserve the implicit default agent explicitly, or the existing
+// channel binding (agentId: "main") breaks once agents.list is populated.
+if (!cfg.agents.list.find(a => a.id === 'main')) {
+  cfg.agents.list.unshift({ id: 'main', name: 'Main', workspace: '~/.openclaw/workspace' });
+}
 
 const team = ['strategist', 'scriptwriter', 'producer', 'publisher'];
 for (const id of team) {
@@ -218,7 +239,7 @@ team.forEach(id => allow.add(id));
 cfg.agents.defaults.subagents.allowAgents = Array.from(allow);
 
 fs.writeFileSync(p, JSON.stringify(cfg, null, 2));
-console.log('agents.list + subagents.allowAgents patched:', team);
+console.log('agents.list + subagents.allowAgents patched:', ['main', ...team]);
 EOF
 ```
 
@@ -226,15 +247,16 @@ EOF
 # VPS
 OPENCLAW_CONFIG=~/.openclaw/openclaw.json node patch-agents.js
 
-# Docker Desktop
+# Docker Desktop (all OSes — the MSYS_NO_PATHCONV prefix is a no-op on
+# macOS/Linux, only Windows Git Bash needs it, see Step 1)
 MSYS_NO_PATHCONV=1 docker cp patch-agents.js openclaw:/tmp/patch-agents.js
-docker exec openclaw node /tmp/patch-agents.js
+MSYS_NO_PATHCONV=1 docker exec openclaw node /tmp/patch-agents.js
 ```
 
 > **Why a script and not `openclaw configure`:** `openclaw configure` is
-> built for single-section interactive edits. Adding four agents plus an
+> built for single-section interactive edits. Adding five agents plus an
 > allowlist entry is a structural change to `agents.list`, so a small node
-> script that reads, edits, and rewrites the JSON5 file directly is more
+> script that reads, edits, and rewrites the JSON file directly is more
 > reliable — the same reasoning as Step 1's `MSYS_NO_PATHCONV` note: know
 > exactly what a command touches before running it against a live config.
 
@@ -248,7 +270,7 @@ sudo systemctl restart openclaw
 docker restart openclaw
 ```
 
-Verify all four exist:
+Verify all five exist:
 
 ```bash
 # VPS
@@ -258,8 +280,28 @@ openclaw agents list
 docker exec -it openclaw openclaw agents list
 ```
 
-Expected: `strategist`, `scriptwriter`, `producer`, `publisher` all appear
-alongside your original default/coordinator agent.
+Expected: `main`, `strategist`, `scriptwriter`, `producer`, `publisher`
+all appear.
+
+**If the container won't come back up** (Docker Desktop only — VPS's
+`systemctl restart` doesn't have this failure mode): a config error on
+startup can crash the whole container, since `openclaw` is its entrypoint
+process. `docker exec` needs a *running* container, so you can't fix the
+file that way. `docker cp` still works on a stopped container — pull the
+file out, fix it, and push it back:
+
+```bash
+MSYS_NO_PATHCONV=1 docker cp openclaw:/home/node/.openclaw/openclaw.json ./openclaw.json
+# Edit ./openclaw.json with any text/JSON editor to fix the reported
+# problem (`docker logs openclaw` shows the exact validation error)
+MSYS_NO_PATHCONV=1 docker cp ./openclaw.json openclaw:/home/node/.openclaw/openclaw.json
+docker start openclaw
+docker exec -it openclaw openclaw config validate
+```
+
+This shouldn't happen if you used the script above as-is (it preserves
+`main`), but it's the general recovery move for any bad hand-edit to a
+running gateway's config.
 
 **Update the skill to the sub-agent-orchestrating version.** Re-download
 `SKILL.md` (Step 1) — it was rewritten to delegate via `sessions_spawn`
@@ -278,13 +320,19 @@ MSYS_NO_PATHCONV=1 docker cp SKILL.md openclaw:/home/node/.openclaw/skills/video
 docker exec -it openclaw openclaw skills update
 ```
 
-**Pass:** `openclaw agents list` shows all four teammates, and
+**Pass:** `openclaw agents list` shows `main` plus all four teammates, and
 `openclaw skills check` still shows `video-content-team` as `✓ ready`.
 
 **Fail — `sessions_spawn` target not allowed / permission error when the
 coordinator tries to delegate:** confirm `agents.defaults.subagents.allowAgents`
 actually contains all four ids — re-run `patch-agents.js`, it's safe to run
 more than once (it skips ids that already exist).
+
+**Fail — `Unknown agent id "main" (not in agents.list)` after restart:**
+you're running an older copy of `patch-agents.js` that doesn't re-add
+`main` — re-download this step's script (it now unshifts a `main` entry
+before adding the team) and use the container-stopped recovery steps
+above to fix the file, then re-run it.
 
 ---
 
@@ -399,6 +447,7 @@ states plainly that this is a dry run (no real upload happened).
 | Agent skips straight to a script with no research | Skill not loaded — run `openclaw skills list` and confirm `video-content-team` appears; re-run Step 2 if missing |
 | Coordinator does everything itself, never mentions `strategist`/`scriptwriter`/`producer`/`publisher` | Sub-agents weren't registered — re-run Step 2b's `patch-agents.js`, restart, then confirm `openclaw agents list` shows all four before retrying |
 | `sessions_spawn` error / delegation silently fails | `agents.defaults.subagents.allowAgents` doesn't include the target id — re-run `patch-agents.js` (Step 2b), it's safe to run more than once |
+| Container won't start / `Unknown agent id "main" (not in agents.list)` | `agents.list` was populated without re-adding the implicit default agent — see Step 2b's container-stopped recovery steps (`docker cp` out, fix, `docker cp` back in) |
 | Agent publishes without asking | Skill file wasn't copied correctly, or an older version is cached — re-copy the file and run `openclaw skills update` |
 | Media generation takes a long time / times out | Normal for `video_generate` — it can take 1-2 minutes. If it fails outright, your provider may not support it; `producer` will still return the storyboard, thumbnail, and voiceover it did produce |
 | "Something went wrong" from the agent | Model provider issue, not this skill — check `openclaw logs --limit 20` |
