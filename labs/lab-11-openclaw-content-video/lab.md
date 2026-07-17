@@ -14,6 +14,13 @@ pauses for your approval in chat before anything is "published."
 > **Docker Desktop users:** Prefix every `openclaw` command with `docker exec -it openclaw`.
 > Example: `docker exec -it openclaw openclaw skills list`
 
+> **macOS users (zsh):** Terminal.app's default shell, zsh, does not treat
+> `#` as a comment when you paste it interactively — pasting a whole code
+> block from this lab (including lines like `# Docker Desktop`) fails with
+> `zsh: command not found: #`. Either run `setopt interactivecomments`
+> once at the start of your session, or copy only the actual commands and
+> skip the `#` lines by hand. This does not affect `bash`/Git Bash.
+
 ---
 
 ## Overview
@@ -441,6 +448,8 @@ states plainly that this is a dry run (no real upload happened).
 
 | Symptom | Fix |
 |---------|-----|
+| `zsh: command not found: #` (macOS) | zsh doesn't treat `#` as a comment interactively by default — run `setopt interactivecomments` once, or paste only the real commands (see the macOS callout above) |
+| `curl: (6) Could not resolve host: raw.githubusercontent.com` | DNS/network issue on your machine, not this lab — test with `ping -c 1 raw.githubusercontent.com`; if it fails, try `networksetup -setdnsservers Wi-Fi 8.8.8.8 1.1.1.1` (macOS) or switch networks (VPN/campus Wi-Fi often blocks this), then retry the `curl` |
 | `channels status` shows nothing running, or you have no bot to message | You skipped or lost Lab 3's setup — this lab does not re-cover BotFather/QR pairing, go complete Lab 3 first |
 | `Permission denied` on `/root/...` (Docker Desktop) | The container runs as user `node`, not root — use `/home/node/.openclaw/...`, not `/root/.openclaw/...` (see Step 1) |
 | Skill shows `△ needs setup` | Your current model/provider doesn't expose `video_generate`/`image_generate`/`tts` — check `openclaw skills check` for the specific missing requirement, or switch models with `openclaw models set` |
