@@ -37,7 +37,7 @@ docker build -t invoice-verify:1.0 .
 Expected output:
 ```
 Successfully built xxxxxxxxxx
-Successfully tagged openclaw/invoice-verify:latest
+Successfully tagged invoice-verify:latest
 ```
 
 ---
