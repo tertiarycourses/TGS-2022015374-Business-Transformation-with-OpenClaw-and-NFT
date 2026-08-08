@@ -109,6 +109,22 @@ Expected output:
 > The SHA-256 hash of the tampered data does not match the stored hash — simulating blockchain immutability.
 
 ---
+# step 7 -Now perform the tamper test
+Change the amount from 1500.00 to 9999.00:
+
+```bash
+curl -X POST http://localhost:5000/verify \
+-H "Content-Type: application/json" \
+-d "{\"invoice_id\":\"INV-2026-001\",\"vendor\":\"Tertiary Infotech\",\"amount\":9999.00,\"date\":\"2026-07-11\"}"
+
+Expected output:
+```json
+{"invoice_id":"INV-2026-001","tampered":true,"verified":false}
+
+```
+
+
+```
 
 ## Verification
 
