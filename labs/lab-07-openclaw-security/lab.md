@@ -140,8 +140,8 @@ cat ~/.openclaw/AGENTS.md
 
 **Docker Desktop:**
 ```bash
-docker exec openclaw cat /home/node/.openclaw/SOUL.md
-docker exec openclaw cat /home/node/.openclaw/AGENTS.md
+docker exec openclaw cat /home/node/.openclaw/workspace/SOUL.md
+docker exec openclaw cat /home/node/.openclaw/workspace/AGENTS.md
 ```
 
 Remove any capabilities you did not intentionally grant.
