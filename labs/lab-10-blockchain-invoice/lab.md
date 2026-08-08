@@ -30,7 +30,8 @@ cd TGS-2022015374-OpenClaw/labs/lab-10-blockchain-invoice
 ## Step 2 — Build the Docker image
 
 ```bash
-docker build -t openclaw/invoice-verify:latest .
+#docker build -t openclaw/invoice-verify:latest .
+docker build -t invoice-verify:1.0 .
 ```
 
 Expected output:
@@ -44,8 +45,13 @@ Successfully tagged openclaw/invoice-verify:latest
 ## Step 3 — Run the blockchain verification container
 
 ```bash
-docker run -d -p 5000:5000 --name invoice-verify \
+#docker run -d -p 5000:5000 --name invoice-verify \
   openclaw/invoice-verify:latest
+
+docker run -d \
+  --name invoice-verify \
+  -p 5000:5000 \
+  invoice-verify:1.0
 sleep 2
 curl http://localhost:5000/health
 ```
@@ -60,15 +66,21 @@ Expected output:
 ## Step 4 — Register a test invoice
 
 ```bash
-curl -X POST http://localhost:5000/register \
+#curl -X POST http://localhost:5000/register \
   -H 'Content-Type: application/json' \
   -d '{"invoice_id":"INV-2026-001","vendor":"Tertiary Infotech",
        "amount":1500.00,"date":"2026-07-11"}'
+
+curl -X POST http://localhost:5000/store \
+-H "Content-Type: application/json" \
+-d "{\"invoice_id\":\"INV-2026-001\",\"vendor\":\"Tertiary Infotech\",\"amount\":1500.00,\"date\":\"2026-07-11\"}"
 ```
 
 Expected output:
-```json
-{"invoice_id": "INV-2026-001", "hash": "...", "status": "registered", "timestamp": "..."}
+```
+curl -X POST http://localhost:5000/verify \
+-H "Content-Type: application/json" \
+-d "{\"invoice_id\":\"INV-2026-001\",\"vendor\":\"Tertiary Infotech\",\"amount\":1500.00,\"date\":\"2026-07-11\"}"
 ```
 
 ---
