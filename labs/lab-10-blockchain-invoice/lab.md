@@ -66,21 +66,12 @@ Expected output:
 ## Step 4 — Register a test invoice
 
 ```bash
-#curl -X POST http://localhost:5000/register \
-  -H 'Content-Type: application/json' \
-  -d '{"invoice_id":"INV-2026-001","vendor":"Tertiary Infotech",
-       "amount":1500.00,"date":"2026-07-11"}'
-
-curl -X POST http://localhost:5000/store \
--H "Content-Type: application/json" \
--d "{\"invoice_id\":\"INV-2026-001\",\"vendor\":\"Tertiary Infotech\",\"amount\":1500.00,\"date\":\"2026-07-11\"}"
+curl -X POST http://localhost:5000/store -H "Content-Type: application/json" -d "{\"invoice_id\":\"INV-2026-001\",\"vendor\":\"Tertiary Infotech\",\"amount\":1500.00,\"date\":\"2026-07-11\"}"
 ```
 
 Expected output:
 ```
-curl -X POST http://localhost:5000/verify \
--H "Content-Type: application/json" \
--d "{\"invoice_id\":\"INV-2026-001\",\"vendor\":\"Tertiary Infotech\",\"amount\":1500.00,\"date\":\"2026-07-11\"}"
+{"status":"stored"}
 ```
 
 ---
