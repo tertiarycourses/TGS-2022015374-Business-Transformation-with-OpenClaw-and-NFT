@@ -1,3 +1,32 @@
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+.claude/
+.codex/
+
+# Private course materials
+assessment/
+assessments/
+courseware/assessment/
+reference/
+references/
+*Answer Key*
+*Answer to*
+*Answers to*
+*Marking Guide*
+*Marking Scheme*
+*Model Answers*
+
+# Build, QA, and archive outputs
 screenshots/
+build/
+dist/
+archive/
+qa/
+qa-*/
+renders/
 __pycache__/
 *.pyc
+*.tmp
+.DS_Store
