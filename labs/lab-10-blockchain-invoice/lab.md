@@ -21,8 +21,8 @@ Simulate blockchain-style invoice immutability using a Flask REST API running in
 ## Step 1 — Clone the Lab 10 source from GitHub
 
 ```bash
-git clone https://github.com/tertiarycourses/TGS-2022015374-OpenClaw.git
-cd TGS-2022015374-OpenClaw/labs/lab-10-blockchain-invoice
+git clone https://github.com/tertiarycourses/TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw.git
+cd TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw/labs/lab-10-blockchain-invoice
 ```
 
 ---
@@ -147,5 +147,5 @@ docker rm invoice-verify
 
 ## Reference
 
-- Lab source code: https://github.com/tertiarycourses/TGS-2022015374-OpenClaw/tree/main/labs/lab-10-blockchain-invoice
+- Lab source code: https://github.com/tertiarycourses/TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw/tree/main/labs/lab-10-blockchain-invoice
 - Flask docs: https://flask.palletsprojects.com
