@@ -22,6 +22,9 @@ references/
 screenshots/
 build_openclaw_courseware.py
 prodoc.py
+openclaw_v*_deck.py
+courseware/slide_map*.json
+courseware/assets/cover-hero*.png
 build/
 dist/
 archive/

@@ -2,6 +2,8 @@
 
 Hands-on WSQ courseware for building, operating, automating, and securing autonomous AI agents with OpenClaw.
 
+Version 6.0 is a fully native, editable 119-slide implementation-level engineering presentation. It exposes the Gateway WebSocket handshake, RPC/event frame schemas, multiplexed HTTP surfaces, bind/config precedence, session-key grammar, SQLite state, prompt/context construction, compaction parameters, tool-policy precedence, device pairing, telemetry fields, SLO formulas and recovery semantics. Detailed click-by-click procedures remain in the Learner Guide and individual lab packs.
+
 | Course detail | Information |
 |---|---|
 | Course code | `TGS-2026064859` |
@@ -30,11 +32,12 @@ By the end of the course, learners will be able to:
 
 ## Topics covered
 
-- Exploring OpenClaw and the autonomous AI agent landscape
-- Evaluating OpenClaw applications and business opportunities
-- Designing OpenClaw workflows and managing implementation risks
-- Tools, APIs, channels, skills, memory, and scheduled automation
-- Monitoring, cost optimisation, security, and human oversight
+- Understanding the Gateway, clients, channels, nodes, WebSocket control plane, and embedded agent runtime
+- Tracing the agent loop through intake, session queues, context assembly, inference, tool execution, streaming, and persistence
+- Managing workspaces, bootstrap files, system prompts, context budgets, compaction, pruning, and durable memory
+- Applying layered tool visibility, sandboxing, allow/deny policy, elevated execution, skills, plugins, and model routing
+- Operating cron, heartbeat, observability, deployment, failure diagnosis, cost controls, and multi-agent delegation
+- Evaluating ten fully worked OpenClaw use cases across personal, business, technical, and multi-agent work
 
 ## Lab environments
 
@@ -61,12 +64,12 @@ Total guided lab time: 270 minutes (4.5 hours).
 
 | File | Description |
 |---|---|
-| [Trainer slides (.pptx)](courseware/WSQ-Autonomous-AI-Agents-with-OpenClaw-v2.0.pptx) | Editable instructor slide deck |
-| [Learner slides (.pdf)](courseware/WSQ-Autonomous-AI-Agents-with-OpenClaw-v2.0.pdf) | Learner-facing slide PDF |
-| [Learner Guide (.docx)](courseware/LG-TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw-v2.0.docx) | Detailed step-by-step lab guide |
-| [Learner Guide (.pdf)](courseware/LG-TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw-v2.0.pdf) | Printable Learner Guide |
-| [Lesson Plan (.docx)](courseware/LP-TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw-v2.0.docx) | One-day delivery schedule and alignment |
-| [Lesson Plan (.pdf)](courseware/LP-TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw-v2.0.pdf) | Printable Lesson Plan |
+| [Trainer slides (.pptx)](courseware/WSQ-Autonomous-AI-Agents-with-OpenClaw-v6.0.pptx) | Editable 119-slide implementation-level instructor deck |
+| [Learner slides (.pdf)](courseware/WSQ-Autonomous-AI-Agents-with-OpenClaw-v6.0.pdf) | Learner-facing slide PDF |
+| [Learner Guide (.docx)](courseware/LG-TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw-v6.0.docx) | Detailed step-by-step lab guide |
+| [Learner Guide (.pdf)](courseware/LG-TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw-v6.0.pdf) | Printable Learner Guide |
+| [Lesson Plan (.docx)](courseware/LP-TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw-v6.0.docx) | One-day delivery schedule and alignment |
+| [Lesson Plan (.pdf)](courseware/LP-TGS-2026064859-Autonomous-AI-Agents-with-OpenClaw-v6.0.pdf) | Printable Lesson Plan |
 
 Assessment papers, answer keys, credentials, references, build-only assets, archives, and QA outputs are private and are deliberately excluded from this public repository.
 
@@ -80,6 +83,12 @@ Assessment papers, answer keys, credentials, references, build-only assets, arch
 
 ## Reference documentation
 
+- [OpenClaw overview](https://docs.openclaw.ai/)
+- [OpenClaw FAQ](https://docs.openclaw.ai/help/faq)
+- [OpenClaw getting started](https://docs.openclaw.ai/start/getting-started)
+- [OpenClaw showcase](https://openclaw.ai/showcase)
+- [OpenClaw repository](https://github.com/openclaw/openclaw)
+- [Awesome OpenClaw use cases](https://github.com/hesamsheikh/awesome-openclaw-usecases)
 - [OpenClaw installation](https://docs.openclaw.ai/install)
 - [OpenClaw model providers](https://docs.openclaw.ai/providers)
 - [OpenClaw channels](https://docs.openclaw.ai/channels)
