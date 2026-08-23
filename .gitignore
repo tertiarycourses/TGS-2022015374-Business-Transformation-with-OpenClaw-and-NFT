@@ -20,6 +20,8 @@ references/
 
 # Build, QA, and archive outputs
 screenshots/
+build_openclaw_courseware.py
+prodoc.py
 build/
 dist/
 archive/
